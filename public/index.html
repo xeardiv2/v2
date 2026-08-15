@@ -31,7 +31,6 @@
       --success: #22c55e;
     }
 
-    /* base reset kept for compatibility with original layout */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
@@ -62,11 +61,9 @@
       font-size: 1.2rem; color: #fff;
     }
 
-    /* NOTE: removed .container grid CSS to let Tailwind utilities control the layout responsively.
-       If Tailwind is not available the following fallback ensures single-column layout. */
+    /* Keep a simple fallback container but let Tailwind manage grid */
     .container { width:100%; max-width:1600px; margin:0 auto; padding:0 1rem; }
 
-    /* API Form Panel */
     .api-panel {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -83,7 +80,6 @@
     }
     .form-group { display: flex; flex-direction: column; gap: .4rem; }
     .form-group label { font-size: .8rem; color: var(--muted); font-weight: 600; }
-
     .form-control {
       padding: .6rem .8rem;
       border-radius: 8px;
@@ -95,11 +91,7 @@
     }
     .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
 
-    .btn {
-      padding: .65rem 1.1rem; border-radius: 8px; cursor: pointer; font-weight: 600;
-      display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: none;
-      font-size: .85rem; transition: all .12s; font-family: inherit;
-    }
+    .btn { padding: .65rem 1.1rem; border-radius: 8px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: none; font-size: .85rem; transition: all .12s; font-family: inherit; }
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
@@ -108,26 +100,27 @@
     .example-btn { display:inline-block; margin:.2rem .4rem .2rem 0; padding:.25rem .55rem; background: rgba(56,189,248,.06); border:1px solid rgba(56,189,248,.16); color:var(--cyan); border-radius:6px; font-size:.78rem; cursor:pointer; }
 
     /* Video Player */
-    .video-wrapper {
-      background: #000; border-radius: 14px; overflow: hidden;
-      border: 1px solid var(--border); aspect-ratio: 16 / 9; position: relative; width: 100%;
-    }
-    @supports not (aspect-ratio: 16/9) {
-      .video-wrapper { padding-top: 56.25%; }
-      .video-wrapper video { position:absolute; top:0; left:0; width:100%; height:100%; }
-    }
+    .video-wrapper { background: #000; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 16 / 9; position: relative; width: 100%; }
+    @supports not (aspect-ratio: 16/9) { .video-wrapper { padding-top: 56.25%; } .video-wrapper video { position:absolute; top:0; left:0; width:100%; height:100%; } }
     .video-wrapper video { width: 100%; height: 100%; display:block; }
 
-    /* Channel list */
     .playlist-section { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; display:flex; flex-direction:column; overflow:hidden; }
     .channel-list { list-style:none; overflow-y:auto; flex:1; }
     .channel-item { padding:.75rem 1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
     .channel-item:hover { background: rgba(255,255,255,.03); }
     .channel-item.active { background: rgba(37,99,235,.15); border-left:4px solid var(--accent); }
 
-    .api-output { background:#040811; border:1px solid var(--border); border-radius:8px; padding:1rem; font-family:monospace; font-size:.75rem; color:var(--cyan); max-height:200px; overflow-y:auto; margin-top:1rem; white-space:pre-wrap; }
+    /* API JSON Output View: constrain width on widescreen and make discreet */
+    .json-bar { display:flex; gap:.5rem; align-items:center; justify-content:space-between; background:transparent; }
+    .json-toggle { background:transparent; border:1px solid var(--border); color:var(--muted); padding:.35rem .6rem; border-radius:6px; cursor:pointer; font-size:.8rem; }
+    .json-copy { background:transparent; border:1px solid var(--border); color:var(--muted); padding:.35rem .6rem; border-radius:6px; cursor:pointer; font-size:.8rem; }
+    .api-output { background:#040811; border:1px solid var(--border); border-radius:8px; padding:1rem; font-family:monospace; font-size:.75rem; color:var(--cyan); max-height:340px; overflow-y:auto; margin-top:0.5rem; white-space:pre-wrap; max-width: min(92vw, 900px); box-shadow: 0 6px 18px rgba(0,0,0,.45); }
+    .api-output.hidden { display:none; }
 
-    /* Chat panel */
+    .copy-feedback { font-size:.75rem; color:var(--success); margin-left:.5rem; opacity:0; transition:opacity .18s; }
+    .copy-feedback.show { opacity:1; }
+
+    /* Chat panel fixed on large screens */
     .chat-panel { background: linear-gradient(180deg, rgba(255,255,255,.02), transparent); border:1px solid var(--border); border-radius:10px; padding:.6rem; margin:.85rem 1rem; display:flex; flex-direction:column; gap:.5rem; }
     .chat-header { display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.4rem .6rem; border-radius:8px; background: rgba(255,255,255,.02); }
     .messages { max-height:240px; overflow-y:auto; padding:.5rem; display:flex; flex-direction:column; gap:.45rem; }
@@ -140,18 +133,17 @@
     .chat-input { flex:1; padding:.45rem .6rem; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); }
 
     @media (min-width: 1024px) {
-      /* limit sidebar height on large screens */
-      .playlist-section { max-height: 85vh; }
-      .chat-panel { margin: .85rem; }
+      .chat-panel { position:fixed; right:1.5rem; top:86px; width:360px; max-height: calc(100vh - 110px); overflow:auto; z-index:90; }
+      /* leave space for the fixed chat by adding right padding to main content on wide screens */
+      main { padding-right: 420px; }
     }
 
     @media (max-width: 1024px) {
-      .chat-panel { margin:.6rem 0; }
-      .chat-header { padding:.3rem .4rem; }
+      .chat-panel { position:relative; width:auto; max-height:none; }
+      main { padding-right: 0; }
     }
   </style>
 </head>
-
 <body class="antialiased bg-slate-900">
 
   <header class="w-full">
@@ -164,10 +156,10 @@
     </div>
   </header>
 
-  <!-- Use Tailwind grid utilities for responsive layout: 1 column on mobile, 2 columns on lg with 380px sidebar -->
+  <!-- Responsive grid: 1 column on mobile, 2 columns on lg (main + sidebar) -->
   <main class="mx-auto max-w-7xl px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 container">
     <div class="space-y-4">
-      <!-- Panel de la API Endpoint -->
+      <!-- API panel -->
       <section class="api-panel">
         <h3 class="text-lg font-semibold"><i class="fa-solid fa-filter"></i> Consulta de API Endpoint (Parámetros GET)</h3>
 
@@ -207,24 +199,34 @@
           <span class="example-btn" onclick="applyExample('all', 'false', 'Fox')">?channel_name=Fox</span>
         </div>
 
-        <div id="json-response-wrapper" style="margin-top: 1rem; display: none;">
-          <label style="font-size: .75rem; color: var(--muted);">Respuesta JSON devuelta por el Endpoint (Fuentes y Links M3U):</label>
-          <pre class="api-output" id="json-response"></pre>
+        <!-- JSON response: discreet header + collapsible pre -->
+        <div id="json-response-wrapper" style="margin-top: 1rem;">
+          <div class="json-bar">
+            <div style="display:flex; align-items:center; gap:.6rem;">
+              <button id="json-toggle-btn" class="json-toggle" onclick="toggleJson()"><i class="fa-solid fa-chevron-down"></i> Ver JSON</button>
+              <button id="json-copy-btn" class="json-copy" onclick="copyJson()" title="Copiar JSON"><i class="fa-regular fa-copy"></i> Copiar</button>
+              <span id="copy-feedback" class="copy-feedback">Copiado!</span>
+            </div>
+            <div style="color:var(--muted); font-size:.82rem;">Respuesta JSON (discreta)</div>
+          </div>
+          <pre class="api-output hidden" id="json-response"></pre>
         </div>
+
       </section>
 
-      <!-- Reproductor HLS -->
+      <!-- Video -->
       <div class="video-wrapper mt-4">
         <video id="player" controls playsinline></video>
       </div>
     </div>
 
-    <!-- Sidebar: Lista Filtrada y Chat -->
-    <aside class="playlist-section lg:sticky lg:top-20">
+    <!-- Sidebar: channels + (chat fixed on large screens) -->
+    <aside class="playlist-section">
       <div class="p-4" style="padding: 1rem; border-bottom: 1px solid var(--border); background: var(--panel-2);">
         <h2>Canales Encontrados (<span id="channel-count">0</span>)</h2>
       </div>
 
+      <!-- Chat panel (will be fixed on large screens) -->
       <div class="chat-panel" id="chat-panel">
         <div class="chat-header">
           <div>
@@ -250,15 +252,14 @@
         </div>
       </div>
 
-      <ul class="channel-list" id="channel-list"></ul>
+      <ul class="channel-list" id="channel-list" style="margin-top:1rem;"></ul>
     </aside>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
   <script>
-    // CONFIG: si tienes un endpoint de "scrub / events" coloca la URL aquí (debe devolver JSON con "events" array)
-    const EVENTS_SCRUB_URL = ""; // poner URL real si existe (CORS permitido)
+    const EVENTS_SCRUB_URL = "";
 
     const GITHUB_PRESETS = {
       all: "https://iptv-org.github.io/iptv/index.m3u",
@@ -284,17 +285,9 @@
           const groupMatch = trimmed.match(/group-title=\"([^\"]*)\"/);
           const logoMatch = trimmed.match(/tvg-logo=\"([^\"]*)\"/);
 
-          current = {
-            name: name,
-            group: groupMatch ? groupMatch[1] : 'General',
-            logo: logoMatch ? logoMatch[1] : ''
-          };
+          current = { name: name, group: groupMatch ? groupMatch[1] : 'General', logo: logoMatch ? logoMatch[1] : '' };
         } else if (trimmed && !trimmed.startsWith('#')) {
-          if (current) {
-            current.m3u8 = trimmed;
-            channels.push(current);
-            current = null;
-          }
+          if (current) { current.m3u8 = trimmed; channels.push(current); current = null; }
         }
       }
       return channels;
@@ -308,13 +301,8 @@
       const playlistUrl = GITHUB_PRESETS[region] || GITHUB_PRESETS.all;
 
       if (!cacheChannels[region]) {
-        try {
-          const res = await fetch(playlistUrl);
-          const text = await res.text();
-          cacheChannels[region] = parseM3U(text);
-        } catch (e) {
-          return { status: 500, error: "Error al obtener la playlist desde GitHub" };
-        }
+        try { const res = await fetch(playlistUrl); const text = await res.text(); cacheChannels[region] = parseM3U(text); }
+        catch (e) { return { status: 500, error: "Error al obtener la playlist desde GitHub" }; }
       }
 
       let channelsList = cacheChannels[region];
@@ -326,12 +314,7 @@
         return matchSports && matchName;
       });
 
-      return {
-        status: 200,
-        total_found: filtered.length,
-        params_received: { region: region, is_sports: isSports, channel_name: channelName || null },
-        channels: filtered.map(c => ({ channel_name: c.name, group: c.group, m3u8_link: c.m3u8, logo: c.logo }))
-      };
+      return { status: 200, total_found: filtered.length, params_received: { region: region, is_sports: isSports, channel_name: channelName || null }, channels: filtered.map(c => ({ channel_name: c.name, group: c.group, m3u8_link: c.m3u8, logo: c.logo })) };
     }
 
     function renderResults(apiResponse) {
@@ -360,9 +343,7 @@
         listEl.appendChild(li);
       });
 
-      if (apiResponse.channels.length > 0) {
-        playStream(apiResponse.channels[0].m3u8_link, listEl.children[0]);
-      }
+      if (apiResponse.channels.length > 0) { playStream(apiResponse.channels[0].m3u8_link, listEl.children[0]); }
     }
 
     function playStream(url, element) {
@@ -372,219 +353,72 @@
       if (element) element.classList.add('active');
       if (!url) return;
       if (hlsPlayer) { try { hlsPlayer.destroy(); } catch(e){} hlsPlayer = null; }
-      if (Hls.isSupported()) {
-        hlsPlayer = new Hls();
-        hlsPlayer.loadSource(url);
-        hlsPlayer.attachMedia(video);
-        hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = url;
-        video.play().catch(() => {});
-      }
+      if (Hls.isSupported()) { hlsPlayer = new Hls(); hlsPlayer.loadSource(url); hlsPlayer.attachMedia(video); hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {})); }
+      else if (video.canPlayType('application/vnd.apple.mpegurl')) { video.src = url; video.play().catch(() => {}); }
     }
 
     // --- Chat logic ---
-    function addBotMessage(text, html=false) {
-      const container = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = 'msg bot';
-      if (html) div.innerHTML = text; else div.textContent = text;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
-    }
-    function addUserMessage(text) {
-      const container = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = 'msg user';
-      div.textContent = text;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
-    }
+    function addBotMessage(text, html=false) { const container = document.getElementById('chat-messages'); const div = document.createElement('div'); div.className = 'msg bot'; if (html) div.innerHTML = text; else div.textContent = text; container.appendChild(div); container.scrollTop = container.scrollHeight; }
+    function addUserMessage(text) { const container = document.getElementById('chat-messages'); const div = document.createElement('div'); div.className = 'msg user'; div.textContent = text; container.appendChild(div); container.scrollTop = container.scrollHeight; }
 
     function setTeamColors(teamName) {
       const map = {"real madrid": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000000", badgeBg: "#000000"},"barcelona": {accent:"#A50044", accentHover:"#8f003d", text:"#fff", badgeBg: "#004D98"},"river": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000", badgeBg: "#e10600"},"boca": {accent:"#ffd700", accentHover:"#ffde59", text:"#002f6c", badgeBg: "#002f6c"},"manchester united": {accent:"#da291c", accentHover:"#b71c1c", text:"#fff", badgeBg: "#000000"},"manu": {accent:"#da291c", accentHover:"#b71c1c", text:"#fff", badgeBg: "#000000"},"real": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000", badgeBg: "#000000"}};
-      const key = teamName.toLowerCase();
-      let colors = map[key];
-      if (!colors) {
-        const hash = Array.from(teamName).reduce((s,c)=> ((s<<5)-s)+c.charCodeAt(0), 0);
-        const hue = Math.abs(hash) % 360;
-        colors = {accent: `hsl(${hue} 80% 55%)`, accentHover: `hsl(${hue} 75% 45%)`, text: '#fff', badgeBg: `hsl(${hue} 60% 35%)`};
-      }
-
-      document.documentElement.style.setProperty('--accent', colors.accent);
-      document.documentElement.style.setProperty('--accent-hover', colors.accentHover);
-      const brandIcon = document.getElementById('brand-icon');
-      if (brandIcon) brandIcon.style.background = `linear-gradient(135deg, ${colors.accent}, ${colors.accentHover})`;
-      const teamDisplay = document.getElementById('team-display');
-      teamDisplay.innerHTML = `<span class="team-badge" style="background:${colors.badgeBg || colors.accent}; color:${colors.text}">${escapeHtml(teamName)}</span>`;
+      const key = teamName.toLowerCase(); let colors = map[key]; if (!colors) { const hash = Array.from(teamName).reduce((s,c)=> ((s<<5)-s)+c.charCodeAt(0), 0); const hue = Math.abs(hash) % 360; colors = {accent: `hsl(${hue} 80% 55%)`, accentHover: `hsl(${hue} 75% 45%)`, text: '#fff', badgeBg: `hsl(${hue} 60% 35%)`}; }
+      document.documentElement.style.setProperty('--accent', colors.accent); document.documentElement.style.setProperty('--accent-hover', colors.accentHover); const brandIcon = document.getElementById('brand-icon'); if (brandIcon) brandIcon.style.background = `linear-gradient(135deg, ${colors.accent}, ${colors.accentHover})`; const teamDisplay = document.getElementById('team-display'); teamDisplay.innerHTML = `<span class="team-badge" style="background:${colors.badgeBg || colors.accent}; color:${colors.text}">${escapeHtml(teamName)}</span>`;
     }
 
     async function findMatchesForTeam(teamName) {
       addBotMessage('Buscando partidos para ' + teamName + '...');
-      const todayISO = new Date().toISOString().slice(0,10);
-      let matches = [];
-
+      const todayISO = new Date().toISOString().slice(0,10); let matches = [];
       if (EVENTS_SCRUB_URL) {
-        try {
-          const res = await fetch(EVENTS_SCRUB_URL);
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data.events)) {
-              matches = data.events.filter(e => {
-                const matchDate = (e.date||'').slice(0,10);
-                const home = (e.home||'').toLowerCase();
-                const away = (e.away||'').toLowerCase();
-                const key = teamName.toLowerCase();
-                return matchDate === todayISO && (home.includes(key) || away.includes(key));
-              });
-            }
-          }
-        } catch (e) { console.warn('Error al consultar EVENTS_SCRUB_URL', e); }
-      }
+        try { const res = await fetch(EVENTS_SCRUB_URL); if (res.ok) { const data = await res.json(); if (Array.isArray(data.events)) { matches = data.events.filter(e => { const matchDate = (e.date||'').slice(0,10); const home = (e.home||'').toLowerCase(); const away = (e.away||'').toLowerCase(); const key = teamName.toLowerCase(); return matchDate === todayISO && (home.includes(key) || away.includes(key)); }); } } } catch (e) { console.warn('Error al consultar EVENTS_SCRUB_URL', e); } }
 
       if (matches.length === 0) {
         const regions = Object.keys(GITHUB_PRESETS);
-        for (const region of regions) {
-          if (!cacheChannels[region]) {
-            try {
-              const res = await fetch(GITHUB_PRESETS[region]);
-              const text = await res.text();
-              cacheChannels[region] = parseM3U(text);
-            } catch (e) { }
-          }
-        }
-
-        const key = teamName.toLowerCase();
-        const foundChannels = [];
-        regions.forEach(r => {
-          const list = cacheChannels[r] || [];
-          list.forEach(ch => {
-            if ((ch.name || '').toLowerCase().includes(key) || ((ch.group||'').toLowerCase().includes(key))) {
-              foundChannels.push({channel: ch, region: r});
-            }
-          });
-        });
-
-        if (foundChannels.length > 0) {
-          matches = foundChannels.map(fc => ({home: teamName, away: '', date: todayISO, channels: [fc.channel.name], m3u: fc.channel.m3u8, group: fc.channel.group}));
-        }
+        for (const region of regions) { if (!cacheChannels[region]) { try { const res = await fetch(GITHUB_PRESETS[region]); const text = await res.text(); cacheChannels[region] = parseM3U(text); } catch (e) { } } }
+        const key = teamName.toLowerCase(); const foundChannels = [];
+        regions.forEach(r => { const list = cacheChannels[r] || []; list.forEach(ch => { if ((ch.name || '').toLowerCase().includes(key) || ((ch.group||'').toLowerCase().includes(key))) { foundChannels.push({channel: ch, region: r}); } }); });
+        if (foundChannels.length > 0) { matches = foundChannels.map(fc => ({home: teamName, away: '', date: todayISO, channels: [fc.channel.name], m3u: fc.channel.m3u8, group: fc.channel.group})); }
       }
-
       return matches;
     }
 
     function showMatchesInChat(matches) {
-      if (!matches || matches.length === 0) {
-        addBotMessage('No encontré partidos para hoy con esa búsqueda. Puedo buscar en otros días si quieres.');
-        return;
-      }
-
-      matches.forEach(m => {
-        const text = `${m.home || ''} vs ${m.away || ''} — ${m.date || ''}`;
-        let html = `<strong>${escapeHtml(text)}</strong><br/>`;
-        if (m.channels && m.channels.length) {
-          html += '<div class="small">Canales relacionados:</div><ul>' + m.channels.map(c => `<li><a href="#" onclick="searchAndPlayChannel('${encodeURIComponent(c)}');return false;">${escapeHtml(c)}</a></li>`).join('') + '</ul>';
-        }
-        if (m.m3u) {
-          html += `<div class="small">Canal encontrado: <a href="#" onclick="playStream('${encodeURIComponent(m.m3u)}');return false;">Reproducir</a></div>`;
-        }
-        addBotMessage(html, true);
-      });
+      if (!matches || matches.length === 0) { addBotMessage('No encontré partidos para hoy con esa búsqueda. Puedo buscar en otros días si quieres.'); return; }
+      matches.forEach(m => { const text = `${m.home || ''} vs ${m.away || ''} — ${m.date || ''}`; let html = `<strong>${escapeHtml(text)}</strong><br/>`; if (m.channels && m.channels.length) { html += '<div class="small">Canales relacionados:</div><ul>' + m.channels.map(c => `<li><a href="#" onclick="searchAndPlayChannel('${encodeURIComponent(c)}');return false;">${escapeHtml(c)}</a></li>`).join('') + '</ul>'; } if (m.m3u) { html += `<div class="small">Canal encontrado: <a href="#" onclick="playStream('${encodeURIComponent(m.m3u)}');return false;">Reproducir</a></div>`; } addBotMessage(html, true); });
     }
 
     function escapeHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
     function escapeJs(s) { return String(s || '').replace(/\\/g,'\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"'); }
 
-    async function searchAndPlayChannel(name) {
-      try { name = decodeURIComponent(name); } catch(e) { }
-      const key = (name || '').toLowerCase();
-      for (const region of Object.keys(cacheChannels)) {
-        const list = cacheChannels[region] || [];
-        for (const ch of list) {
-          if ((ch.name || '').toLowerCase().includes(key)) {
-            const fakeResp = { status: 200, total_found: 1, channels: [{channel_name: ch.name, group: ch.group, m3u8_link: ch.m3u8, logo: ch.logo}] };
-            renderResults(fakeResp);
-            return;
-          }
-        }
-      }
-      addBotMessage('No pude encontrar el canal exacto en las playlists cargadas.');
-    }
+    async function searchAndPlayChannel(name) { try { name = decodeURIComponent(name); } catch(e) { } const key = (name || '').toLowerCase(); for (const region of Object.keys(cacheChannels)) { const list = cacheChannels[region] || []; for (const ch of list) { if ((ch.name || '').toLowerCase().includes(key)) { const fakeResp = { status: 200, total_found: 1, channels: [{channel_name: ch.name, group: ch.group, m3u8_link: ch.m3u8, logo: ch.logo}] }; renderResults(fakeResp); return; } } } addBotMessage('No pude encontrar el canal exacto en las playlists cargadas.'); }
 
-    async function applyExample(region, isSports, channelName) {
-      document.getElementById('region').value = region;
-      document.getElementById('is_sports').value = isSports;
-      document.getElementById('channel_name').value = channelName;
-      const params = new URLSearchParams({ region, is_sports: isSports, channel_name: channelName });
-      window.history.pushState({}, '', '?' + params.toString());
-      const res = await apiEndpointHandler(params);
-      renderResults(res);
-    }
+    async function applyExample(region, isSports, channelName) { document.getElementById('region').value = region; document.getElementById('is_sports').value = isSports; document.getElementById('channel_name').value = channelName; const params = new URLSearchParams({ region, is_sports: isSports, channel_name: channelName }); window.history.pushState({}, '', '?' + params.toString()); const res = await apiEndpointHandler(params); renderResults(res); }
 
     function suggestTeam(t) { document.getElementById('chat-input').value = t; document.getElementById('chat-send').focus(); }
 
     async function handleChatInput(raw) {
-      const text = (raw||'').trim();
-      if (!text) return;
-      addUserMessage(text);
-      if (!currentTeam) {
-        currentTeam = text;
-        setTeamColors(currentTeam);
-        addBotMessage(`Perfecto, eres de ${escapeHtml(currentTeam)}. ¿Quieres que busque los partidos de hoy para tu equipo? (si/no)`);
-        return;
-      }
-
-      const low = text.toLowerCase();
-      if (low === 'si' || low === 'sí' || low === 's' || low === 'ok' || low === 'yes') {
-        addBotMessage('Voy a buscar partidos y canales relacionados...');
-        const matches = await findMatchesForTeam(currentTeam);
-        showMatchesInChat(matches);
-        return;
-      }
-      if (low === 'no' || low === 'n') {
-        addBotMessage('De acuerdo. Si quieres, puedes escribir otro equipo o usar las sugerencias.');
-        return;
-      }
-
-      currentTeam = text;
-      setTeamColors(currentTeam);
-      addBotMessage(`He cambiado a ${escapeHtml(currentTeam)}. ¿Quieres buscar partidos de hoy para este equipo? (si/no)`);
+      const text = (raw||'').trim(); if (!text) return; addUserMessage(text); if (!currentTeam) { currentTeam = text; setTeamColors(currentTeam); addBotMessage(`Perfecto, eres de ${escapeHtml(currentTeam)}. ¿Quieres que busque los partidos de hoy para tu equipo? (si/no)`); return; }
+      const low = text.toLowerCase(); if (low === 'si' || low === 'sí' || low === 's' || low === 'ok' || low === 'yes') { addBotMessage('Voy a buscar partidos y canales relacionados...'); const matches = await findMatchesForTeam(currentTeam); showMatchesInChat(matches); return; } if (low === 'no' || low === 'n') { addBotMessage('De acuerdo. Si quieres, puedes escribir otro equipo o usar las sugerencias.'); return; }
+      currentTeam = text; setTeamColors(currentTeam); addBotMessage(`He cambiado a ${escapeHtml(currentTeam)}. ¿Quieres buscar partidos de hoy para este equipo? (si/no)`);
     }
 
+    // JSON toggle + copy helpers
+    function toggleJson() {
+      const pre = document.getElementById('json-response'); const btn = document.getElementById('json-toggle-btn'); if (!pre) return; if (pre.classList.contains('hidden')) { pre.classList.remove('hidden'); btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> Ocultar JSON'; } else { pre.classList.add('hidden'); btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Ver JSON'; } }
+    async function copyJson() { const pre = document.getElementById('json-response'); const fb = document.getElementById('copy-feedback'); if (!pre) return; try { await navigator.clipboard.writeText(pre.textContent || ''); fb.classList.add('show'); setTimeout(()=>fb.classList.remove('show'), 1400); } catch(e) { console.warn('No se pudo copiar', e); } }
+
     document.addEventListener('DOMContentLoaded', async () => {
-      new Plyr('#player');
-      addBotMessage('Hola! ¿De qué equipo eres? Escribe el nombre o usa una sugerencia.');
+      new Plyr('#player'); addBotMessage('Hola! ¿De qué equipo eres? Escribe el nombre o usa una sugerencia.');
 
-      document.getElementById('chat-send').addEventListener('click', () => {
-        const v = document.getElementById('chat-input').value;
-        document.getElementById('chat-input').value = '';
-        handleChatInput(v);
-      });
-      document.getElementById('chat-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const v = e.target.value;
-          e.target.value = '';
-          handleChatInput(v);
-        }
-      });
+      document.getElementById('chat-send').addEventListener('click', () => { const v = document.getElementById('chat-input').value; document.getElementById('chat-input').value = ''; handleChatInput(v); });
+      document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); const v = e.target.value; e.target.value = ''; handleChatInput(v); } });
 
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('region')) document.getElementById('region').value = urlParams.get('region');
-      if (urlParams.has('is_sports')) document.getElementById('is_sports').value = urlParams.get('is_sports');
-      if (urlParams.has('channel_name')) document.getElementById('channel_name').value = urlParams.get('channel_name');
+      const urlParams = new URLSearchParams(window.location.search); if (urlParams.has('region')) document.getElementById('region').value = urlParams.get('region'); if (urlParams.has('is_sports')) document.getElementById('is_sports').value = urlParams.get('is_sports'); if (urlParams.has('channel_name')) document.getElementById('channel_name').value = urlParams.get('channel_name');
 
-      const response = await apiEndpointHandler(urlParams);
-      renderResults(response);
+      const response = await apiEndpointHandler(urlParams); renderResults(response);
 
-      document.getElementById('api-filter-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const searchParams = new URLSearchParams(formData);
-        window.history.pushState({}, '', '?' + searchParams.toString());
-        const res = await apiEndpointHandler(searchParams);
-        renderResults(res);
-      });
+      document.getElementById('api-filter-form').addEventListener('submit', async (e) => { e.preventDefault(); const formData = new FormData(e.target); const searchParams = new URLSearchParams(formData); window.history.pushState({}, '', '?' + searchParams.toString()); const res = await apiEndpointHandler(searchParams); renderResults(res); });
     });
   </script>
 
