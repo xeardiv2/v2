@@ -1,183 +1,697 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>LLM Chat App</title>
-		<style>
-			:root {
-				--primary-color: #f6821f;
-				--primary-hover: #e67e22;
-				--light-bg: #f9fafb;
-				--border-color: #e5e7eb;
-				--text-color: #1f2937;
-				--text-light: #6b7280;
-				--user-msg-bg: #fff2e6;
-				--assistant-msg-bg: #f3f4f6;
-			}
+ <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Canales Deportivos IPTV · Chat IA</title>
+  <!-- Plyr CSS -->
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Fuentes -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter/400.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter/600.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk/700.css" />
+  <style>
+    :root {
+      --bg: #070d1a;
+      --panel: #0d1626;
+      --panel-2: #111c31;
+      --border: #1e2c45;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --cyan: #38bdf8;
+      --text: #e6edf7;
+      --muted: #8ea0bd;
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; }
 
-			* {
-				box-sizing: border-box;
-				margin: 0;
-				padding: 0;
-			}
+    header {
+      background: rgba(13,22,38,.85);
+      backdrop-filter: blur(10px);
+      padding: .85rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .brand { display: flex; align-items: center; gap: .8rem; }
+    .brand-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #0ea5e9);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; color: #fff;
+    }
 
-			body {
-				font-family:
-					-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-					Cantarell, sans-serif;
-				line-height: 1.6;
-				color: var(--text-color);
-				max-width: 800px;
-				margin: 0 auto;
-				padding: 1rem;
-			}
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1.4rem;
+      padding: 1.4rem;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+    @media (max-width: 1024px) { .container { grid-template-columns: 1fr; } }
 
-			header {
-				text-align: center;
-				margin-bottom: 2rem;
-				padding: 1rem 0;
-				border-bottom: 1px solid var(--border-color);
-			}
+    /* API Form Panel */
+    .api-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.2rem;
+      margin-bottom: 1.4rem;
+    }
+    .api-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      align-items: end;
+      margin-top: 1rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+    .form-group label { font-size: .8rem; color: var(--muted); font-weight: 600; }
+    .form-control {
+      padding: .6rem .8rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: .85rem;
+      outline: none;
+    }
+    .form-control:focus { border-color: var(--accent); }
 
-			h1 {
-				font-size: 1.5rem;
-				color: var(--primary-color);
-			}
+    .btn {
+      padding: .65rem 1.1rem; border-radius: 8px; cursor: pointer; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: none;
+      font-size: .85rem; transition: all .2s; font-family: inherit;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
 
-			.chat-container {
-				display: flex;
-				flex-direction: column;
-				height: calc(100vh - 200px);
-				min-height: 400px;
-				border: 1px solid var(--border-color);
-				border-radius: 8px;
-				overflow: hidden;
-			}
+    /* Ejemplos de uso */
+    .examples-box {
+      margin-top: 1rem;
+      padding: .85rem;
+      background: var(--panel-2);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+    }
+    .examples-box h4 { font-size: .8rem; color: var(--cyan); margin-bottom: .5rem; }
+    .example-btn {
+      display: inline-block;
+      margin: .2rem .4rem .2rem 0;
+      padding: .25rem .55rem;
+      background: rgba(56,189,248,.1);
+      border: 1px solid rgba(56,189,248,.3);
+      color: var(--cyan);
+      border-radius: 5px;
+      font-size: .75rem;
+      cursor: pointer;
+      font-family: monospace;
+    }
+    .example-btn:hover { background: rgba(56,189,248,.25); }
 
-			.chat-messages {
-				flex: 1;
-				overflow-y: auto;
-				padding: 1rem;
-				background-color: var(--light-bg);
-			}
+    /* Video Player */
+    .video-wrapper {
+      background: #000; border-radius: 14px; overflow: hidden;
+      border: 1px solid var(--border); aspect-ratio: 16 / 9; position: relative;
+    }
+    .video-wrapper video { width: 100%; height: 100%; }
 
-			.message {
-				margin-bottom: 1rem;
-				padding: 0.75rem;
-				border-radius: 8px;
-				max-width: 80%;
-			}
+    /* Channel List */
+    .playlist-section {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+      display: flex; flex-direction: column; overflow: hidden; max-height: 700px;
+    }
+    .channel-list { list-style: none; overflow-y: auto; flex: 1; }
+    .channel-item {
+      padding: .75rem 1rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: background .2s;
+    }
+    .channel-item:hover { background: rgba(255,255,255,.04); }
+    .channel-item.active { background: rgba(37,99,235,.2); border-left: 4px solid var(--accent); }
 
-			.message p {
-				white-space: pre-line;
-				margin: 0;
-				overflow-wrap: anywhere;
-			}
+    /* API JSON Output View */
+    .api-output {
+      background: #040811; border: 1px solid var(--border); border-radius: 8px;
+      padding: 1rem; font-family: monospace; font-size: .75rem; color: var(--cyan);
+      max-height: 200px; overflow-y: auto; margin-top: 1rem; white-space: pre-wrap;
+    }
 
-			.user-message {
-				background-color: var(--user-msg-bg);
-				align-self: flex-end;
-				margin-left: auto;
-			}
+    /* Chat panel */
+    .chat-panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .6rem;
+      margin: .85rem;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .chat-header {
+      display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+      padding: .4rem .6rem; border-radius:8px; background: rgba(255,255,255,.02);
+    }
+    .messages { max-height: 240px; overflow-y:auto; padding: .5rem; display:flex; flex-direction:column; gap:.45rem; }
+    .msg { padding:.5rem .7rem; border-radius:8px; max-width: 95%; font-size:.9rem; line-height:1.2; }
+    .msg.bot { background: rgba(255,255,255,.03); color:var(--muted); align-self:flex-start; }
+    .msg.user { background: linear-gradient(90deg,var(--accent),var(--accent-hover)); color:#fff; align-self:flex-end; }
+    .chat-controls { display:flex; gap:.5rem; align-items:center; padding-top:.4rem; }
+    .team-badge { padding:.25rem .5rem; border-radius:6px; font-weight:700; color:#fff; font-size:.85rem; display:inline-block; }
+    .quick-btn { background: rgba(255,255,255,.03); border:1px solid var(--border); color:var(--muted); padding:.25rem .5rem; border-radius:6px; cursor:pointer; }
+    .chat-input { flex:1; padding:.45rem .6rem; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); }
+    .small { font-size:.82rem; color:var(--muted); }
 
-			.assistant-message {
-				background-color: var(--assistant-msg-bg);
-				align-self: flex-start;
-			}
+    /* small responsive fixes */
+    @media (max-width: 1024px) {
+      .chat-panel { margin: .6rem 0; }
+      .chat-header { padding:.3rem .4rem; }
+    }
+  </style>
+</head>
+<body>
 
-			.message-input {
-				display: flex;
-				padding: 0.75rem;
-				border-top: 1px solid var(--border-color);
-				background-color: white;
-			}
+  <header>
+    <div class="brand">
+      <div class="brand-icon" id="brand-icon"><i class="fa-solid fa-code"></i></div>
+      <div>
+        <h1 id="brand-title">Canales IPTV v1.2</h1>
+        <span style="font-size:.75rem; color:var(--muted);">API Endpoint con Filtros GET y Chat IA</span>
+      </div>
+    </div>
+  </header>
 
-			#user-input {
-				flex: 1;
-				padding: 0.75rem;
-				border: 1px solid var(--border-color);
-				border-radius: 4px;
-				font-family: inherit;
-				resize: none;
-				min-height: 44px;
-			}
+  <main class="container">
+    <div>
+      <!-- Panel de la API Endpoint -->
+      <section class="api-panel">
+        <h3><i class="fa-solid fa-filter"></i> Consulta de API Endpoint (Parámetros GET)</h3>
+        
+        <form id="api-filter-form" class="api-form">
+          <!-- Opción 1: Región / País -->
+          <div class="form-group">
+            <label for="region">Región o País</label>
+            <select id="region" name="region" class="form-control">
+              <option value="all">Todas las regiones (Por defecto)</option>
+              <option value="ar">Argentina</option>
+              <option value="es">España</option>
+              <option value="mx">México</option>
+              <option value="latin">Latinoamérica</option>
+            </select>
+          </div>
 
-			#send-button {
-				margin-left: 0.5rem;
-				padding: 0 1rem;
-				background-color: var(--primary-color);
-				color: white;
-				border: none;
-				border-radius: 4px;
-				cursor: pointer;
-				transition: background-color 0.2s;
-			}
+          <!-- Opción 2: Preguntar si es Deportes -->
+          <div class="form-group">
+            <label for="is_sports">¿Categoría Deportes?</label>
+            <select id="is_sports" name="is_sports" class="form-control">
+              <option value="false">Cargar todos los canales (Por defecto)</option>
+              <option value="true">Solo canales de Deportes</option>
+            </select>
+          </div>
 
-			#send-button:hover {
-				background-color: var(--primary-hover);
-			}
+          <!-- Opción 3: Nombre del canal o similar (INPUT SOLICITADO) -->
+          <div class="form-group">
+            <label for="channel_name">Nombre del canal o coincidencia</label>
+            <input type="text" id="channel_name" name="channel_name" class="form-control" placeholder="Ej: ESPN, TyC, Fox, TNT...">
+          </div>
 
-			#send-button:disabled {
-				background-color: var(--text-light);
-				cursor: not-allowed;
-			}
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Consultar API</button>
+        </form>
 
-			.typing-indicator {
-				display: none;
-				font-style: italic;
-				color: var(--text-light);
-				padding: 1rem;
-			}
+        <!-- Sección con ejemplos de cómo solicitar -->
+        <div class="examples-box">
+          <h4><i class="fa-solid fa-lightbulb"></i> Ejemplos de cómo solicitar a la API (Click para probar):</h4>
+          <span class="example-btn" onclick="applyExample('all', 'true', 'ESPN')">?region=all&is_sports=true&channel_name=ESPN</span>
+          <span class="example-btn" onclick="applyExample('ar', 'false', '')">?region=ar&is_sports=false&channel_name=</span>
+          <span class="example-btn" onclick="applyExample('all', 'true', '')">?is_sports=true (Solo Deportes)</span>
+          <span class="example-btn" onclick="applyExample('all', 'false', 'Fox')">?channel_name=Fox</span>
+        </div>
 
-			.typing-indicator.visible {
-				display: block;
-			}
+        <div id="json-response-wrapper" style="margin-top: 1rem; display: none;">
+          <label style="font-size: .75rem; color: var(--muted);">Respuesta JSON devuelta por el Endpoint (Fuentes y Links M3U):</label>
+          <pre class="api-output" id="json-response"></pre>
+        </div>
+      </section>
 
-			footer {
-				margin-top: 1rem;
-				text-align: center;
-				font-size: 0.85rem;
-				color: var(--text-light);
-			}
-		</style>
-	</head>
-	<body>
-		<header>
-			<h1>Cloudflare AI Chat</h1>
-			<p>Powered by Cloudflare Workers AI</p>
-		</header>
+      <!-- Reproductor HLS -->
+      <div class="video-wrapper">
+        <video id="player" controls playsinline></video>
+      </div>
+    </div>
 
-		<div class="chat-container">
-			<div id="chat-messages" class="chat-messages">
-				<div class="message assistant-message">
-					<p>
-						Hello! I'm an LLM chat app powered by Cloudflare Workers AI. How can
-						I help you today?
-					</p>
-				</div>
-			</div>
+    <!-- Lista Filtrada y Chat -->
+    <aside class="playlist-section">
+      <div style="padding: 1rem; border-bottom: 1px solid var(--border); background: var(--panel-2);">
+        <h2>Canales Encontrados (<span id="channel-count">0</span>)</h2>
+      </div>
 
-			<div class="typing-indicator" id="typing-indicator">
-				AI is thinking...
-			</div>
+      <!-- Chat Panel añadido -->
+      <div class="chat-panel" id="chat-panel">
+        <div class="chat-header">
+          <div>
+            <strong>Asistente Deportes</strong>
+            <div class="small">Te ayudaré a encontrar partidos y canales</div>
+          </div>
+          <div id="team-display"></div>
+        </div>
 
-			<div class="message-input">
-				<textarea
-					id="user-input"
-					placeholder="Type your message here..."
-					rows="1"
-					autofocus
-				></textarea>
-				<button id="send-button">Send</button>
-			</div>
-		</div>
+        <div class="messages" id="chat-messages" aria-live="polite"></div>
 
-		<footer>
-			<p>Cloudflare Workers AI Chat Template &copy; 2025</p>
-		</footer>
+        <div class="chat-controls">
+          <input id="chat-input" class="chat-input" placeholder="Escribe tu equipo o pulsa una sugerencia..." />
+          <button id="chat-send" class="btn btn-primary">Enviar</button>
+        </div>
 
-		<!-- Chat app script -->
-		<script src="chat.js"></script>
-	</body>
+        <div style="display:flex; gap:.4rem; padding-top:.4rem;">
+          <button class="quick-btn" onclick="suggestTeam('Real Madrid')">Real Madrid</button>
+          <button class="quick-btn" onclick="suggestTeam('Barcelona')">Barcelona</button>
+          <button class="quick-btn" onclick="suggestTeam('River')">River</button>
+          <button class="quick-btn" onclick="suggestTeam('Boca')">Boca</button>
+          <button class="quick-btn" onclick="suggestTeam('Manchester United')">ManU</button>
+        </div>
+      </div>
+
+      <ul class="channel-list" id="channel-list"></ul>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+  <script>
+    // CONFIG: si tienes un endpoint de "scrub / events" coloca la URL aquí (debe devolver JSON con "events" array)
+    // Formato esperado ejemplo:
+    // { events: [ { home: "Team A", away: "Team B", date: "2026-08-15", channels: ["canal1","canal2"], extra: {...} } ] }
+    const EVENTS_SCRUB_URL = ""; // poner URL real si existe (CORS permitido)
+
+    // URLs base de GitHub según la región solicitada
+    const GITHUB_PRESETS = {
+      all: "https://iptv-org.github.io/iptv/index.m3u",
+      ar: "https://iptv-org.github.io/iptv/countries/ar.m3u",
+      es: "https://iptv-org.github.io/iptv/countries/es.m3u",
+      mx: "https://iptv-org.github.io/iptv/countries/mx.m3u",
+      latin: "https://iptv-org.github.io/iptv/countries/latin.m3u"
+    };
+
+    let cacheChannels = {};
+    let hlsPlayer = null;
+    let currentTeam = null;
+
+    // Parser de formato M3U
+    function parseM3U(text) {
+      const lines = text.split(/\r?\n/);
+      const channels = [];
+      let current = null;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#EXTINF:')) {
+          const name = trimmed.substring(trimmed.lastIndexOf(',') + 1).trim();
+          const groupMatch = trimmed.match(/group-title=\"([^\"]*)\"/);
+          const logoMatch = trimmed.match(/tvg-logo=\"([^\"]*)\"/);
+          
+          current = {
+            name: name,
+            group: groupMatch ? groupMatch[1] : 'General',
+            logo: logoMatch ? logoMatch[1] : ''
+          };
+        } else if (trimmed && !trimmed.startsWith('#')) {
+          if (current) {
+            current.m3u8 = trimmed;
+            channels.push(current);
+            current = null;
+          }
+        }
+      }
+      return channels;
+    }
+
+    // HANDLER PRINCIPAL DE API ENDPOINT
+    async function apiEndpointHandler(params) {
+      const region = params.get('region') || 'all';
+      const isSports = params.get('is_sports') === 'true';
+      const channelName = (params.get('channel_name') || '').toLowerCase().trim();
+
+      const playlistUrl = GITHUB_PRESETS[region] || GITHUB_PRESETS.all;
+
+      // Descarga y cache de playlist desde GitHub
+      if (!cacheChannels[region]) {
+        try {
+          const res = await fetch(playlistUrl);
+          const text = await res.text();
+          cacheChannels[region] = parseM3U(text);
+        } catch (e) {
+          return { status: 500, error: "Error al obtener la playlist desde GitHub" };
+        }
+      }
+
+      let channelsList = cacheChannels[region];
+
+      // Aplicar Filtros:
+      let filtered = channelsList.filter(ch => {
+        // Opción 2: Filtro Deportes
+        const isSportChannel = ch.group.toLowerCase().includes('sport') || ch.name.toLowerCase().includes('sport');
+        const matchSports = isSports ? isSportChannel : true;
+
+        // Opción 3: Nombre del canal o coincidencia similar
+        const matchName = channelName ? ch.name.toLowerCase().includes(channelName) : true;
+
+        return matchSports && matchName;
+      });
+
+      // Respuesta de la API en formato JSON estructurado
+      return {
+        status: 200,
+        total_found: filtered.length,
+        params_received: {
+          region: region,
+          is_sports: isSports,
+          channel_name: channelName || null
+        },
+        channels: filtered.map(c => ({
+          channel_name: c.name,
+          group: c.group,
+          m3u8_link: c.m3u8,
+          logo: c.logo
+        }))
+      };
+    }
+
+    // Renderizar resultados en pantalla y JSON de respuesta
+    function renderResults(apiResponse) {
+      const listEl = document.getElementById('channel-list');
+      const countEl = document.getElementById('channel-count');
+      const jsonEl = document.getElementById('json-response');
+      const jsonWrapper = document.getElementById('json-response-wrapper');
+
+      listEl.innerHTML = '';
+      jsonWrapper.style.display = 'block';
+      jsonEl.textContent = JSON.stringify(apiResponse, null, 2);
+
+      if (apiResponse.status !== 200 || !apiResponse.channels) {
+        countEl.textContent = '0';
+        listEl.innerHTML = '<li style="padding:1rem; color:var(--muted);">Sin canales encontrados para esta consulta.</li>';
+        return;
+      }
+
+      countEl.textContent = apiResponse.total_found;
+
+      apiResponse.channels.forEach((ch) => {
+        const li = document.createElement('li');
+        li.className = 'channel-item';
+        li.innerHTML = `
+          <div>
+            <strong>${ch.channel_name}</strong>
+            <br><small style="color:var(--muted);">${ch.group}</small>
+          </div>
+          <i class="fa-solid fa-play"></i>
+        `;
+        li.addEventListener('click', () => playStream(ch.m3u8_link, li));
+        listEl.appendChild(li);
+      });
+
+      if (apiResponse.channels.length > 0) {
+        playStream(apiResponse.channels[0].m3u8_link, listEl.children[0]);
+      }
+    }
+
+    // Reproductor de Video
+    function playStream(url, element) {
+      const video = document.getElementById('player');
+      document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+      if (element) element.classList.add('active');
+
+      if (hlsPlayer) { hlsPlayer.destroy(); hlsPlayer = null; }
+
+      if (Hls.isSupported()) {
+        hlsPlayer = new Hls();
+        hlsPlayer.loadSource(url);
+        hlsPlayer.attachMedia(video);
+        hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.play().catch(() => {});
+      }
+    }
+
+    // --- Chat logic ---
+    function addBotMessage(text, html=false) {
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'msg bot';
+      if (html) div.innerHTML = text; else div.textContent = text;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+    function addUserMessage(text) {
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'msg user';
+      div.textContent = text;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function setTeamColors(teamName) {
+      const map = {
+        "real madrid": {accent:"#ffffff", accentHover:"#f3f3f3", text="#000000", badgeBg: "#000000"},
+        "barcelona": {accent:"#A50044", accentHover:"#8f003d", text:"#fff", badgeBg: "#004D98"},
+        "river": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000", badgeBg: "#e10600"},
+        "boca": {accent:"#ffd700", accentHover:"#ffde59", text:"#002f6c", badgeBg: "#002f6c"},
+        "manchester united": {accent:"#da291c", accentHover:"#b71c1c", text:"#fff", badgeBg: "#000000"},
+        "manu": {accent:"#da291c", accentHover:"#b71c1c", text:"#fff", badgeBg: "#000000"},
+        "real": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000", badgeBg: "#000000"}
+      };
+      const key = teamName.toLowerCase();
+      let colors = map[key];
+      if (!colors) {
+        // generar colores a partir del nombre
+        const hash = Array.from(teamName).reduce((s,c)=> ((s<<5)-s)+c.charCodeAt(0), 0);
+        const hue = Math.abs(hash) % 360;
+        colors = {accent: `hsl(${hue} 80% 55%)`, accentHover: `hsl(${hue} 75% 45%)`, text: '#fff', badgeBg: `hsl(${hue} 60% 35%)`};
+      }
+
+      document.documentElement.style.setProperty('--accent', colors.accent);
+      document.documentElement.style.setProperty('--accent-hover', colors.accentHover);
+      // update brand icon bg
+      const brandIcon = document.getElementById('brand-icon');
+      if (brandIcon) brandIcon.style.background = `linear-gradient(135deg, ${colors.accent}, ${colors.accentHover})`;
+
+      // show team badge
+      const teamDisplay = document.getElementById('team-display');
+      teamDisplay.innerHTML = `<span class="team-badge" style="background:${colors.badgeBg || colors.accent}; color:${colors.text}">${teamName}</span>`;
+    }
+
+    async function findMatchesForTeam(teamName) {
+      addBotMessage('Buscando partidos para ' + teamName + '...');
+      const todayISO = new Date().toISOString().slice(0,10);
+      let matches = [];
+
+      // 1) intentar con EVENTS_SCRUB_URL si está configurada
+      if (EVENTS_SCRUB_URL) {
+        try {
+          const res = await fetch(EVENTS_SCRUB_URL);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.events)) {
+              matches = data.events.filter(e => {
+                const matchDate = (e.date||'').slice(0,10);
+                const home = (e.home||'').toLowerCase();
+                const away = (e.away||'').toLowerCase();
+                const key = teamName.toLowerCase();
+                return matchDate === todayISO && (home.includes(key) || away.includes(key));
+              });
+            }
+          }
+        } catch (e) {
+          console.warn('Error al consultar EVENTS_SCRUB_URL', e);
+        }
+      }
+
+      // 2) si no hay matches desde eventos, buscar en M3U local (cargar playlists y filtrar por nombre del equipo)
+      if (matches.length === 0) {
+        // cargar todas regiones si no cacheadas
+        const regions = Object.keys(GITHUB_PRESETS);
+        for (const region of regions) {
+          if (!cacheChannels[region]) {
+            try {
+              const res = await fetch(GITHUB_PRESETS[region]);
+              const text = await res.text();
+              cacheChannels[region] = parseM3U(text);
+            } catch (e) { /* ignore region errors */ }
+          }
+        }
+
+        const key = teamName.toLowerCase();
+        const foundChannels = [];
+        regions.forEach(r => {
+          const list = cacheChannels[r] || [];
+          list.forEach(ch => {
+            if (ch.name.toLowerCase().includes(key) || (ch.group||'').toLowerCase().includes(key)) {
+              foundChannels.push({channel: ch, region: r});
+            }
+          });
+        });
+
+        if (foundChannels.length > 0) {
+          // convertimos a un "match" basado en canal con posible horario desconocido
+          matches = foundChannels.map(fc => ({home: teamName, away: '', date: todayISO, channels: [fc.channel.name], m3u: fc.channel.m3u8, group: fc.channel.group}));
+        }
+      }
+
+      return matches;
+    }
+
+    function showMatchesInChat(matches) {
+      if (!matches || matches.length === 0) {
+        addBotMessage('No encontré partidos para hoy con esa búsqueda. Puedo buscar en otros días si quieres.');
+        return;
+      }
+
+      matches.forEach(m => {
+        const text = `${m.home || ''} vs ${m.away || ''} — ${m.date || ''}`;
+        let html = `<strong>${escapeHtml(text)}</strong><br/>`;
+        if (m.channels && m.channels.length) {
+          html += '<div class="small">Canales relacionados:</div><ul>' + m.channels.map(c => `<li><a href="#" onclick="searchAndPlayChannel(\'${escapeJs(c)}\')">${escapeHtml(c)}</a></li>`).join('') + '</ul>';
+        }
+        if (m.m3u) {
+          html += `<div class="small">Canal encontrado: <a href="#" onclick="playStream(\'${escapeJs(m.m3u)}\')">Reproducir</a></div>`;
+        }
+        addBotMessage(html, true);
+      });
+    }
+
+    // helper safe strings
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escapeJs(s) { return String(s).replace(/'/g, "\\'`).replace(/\"/g, '\\\"'); }
+
+    async function searchAndPlayChannel(name) {
+      // Busca en las listas cargadas por nombre de canal y reproduce el primero que coincida
+      const key = name.toLowerCase();
+      for (const region of Object.keys(cacheChannels)) {
+        const list = cacheChannels[region] || [];
+        for (const ch of list) {
+          if (ch.name.toLowerCase().includes(key)) {
+            // seleccionar la lista en el UI
+            const fakeResp = { status: 200, total_found: 1, channels: [{channel_name: ch.name, group: ch.group, m3u8_link: ch.m3u8, logo: ch.logo}] };
+            renderResults(fakeResp);
+            return;
+          }
+        }
+      }
+      addBotMessage('No pude encontrar el canal exacto en las playlists cargadas.');
+    }
+
+    // Función auxiliar para probar ejemplos predefinidos
+    async function applyExample(region, isSports, channelName) {
+      document.getElementById('region').value = region;
+      document.getElementById('is_sports').value = isSports;
+      document.getElementById('channel_name').value = channelName;
+
+      const params = new URLSearchParams({ region, is_sports: isSports, channel_name: channelName });
+      window.history.pushState({}, '', '?' + params.toString());
+      const res = await apiEndpointHandler(params);
+      renderResults(res);
+    }
+
+    // Chat input handlers
+    function suggestTeam(t) { document.getElementById('chat-input').value = t; document.getElementById('chat-send').focus(); }
+
+    async function handleChatInput(raw) {
+      const text = (raw||'').trim();
+      if (!text) return;
+      addUserMessage(text);
+
+      // simple state machine
+      if (!currentTeam) {
+        // first answer: treat as team name and set colors
+        currentTeam = text;
+        setTeamColors(currentTeam);
+        addBotMessage(`Perfecto, eres de ${currentTeam}. ¿Quieres que busque los partidos de hoy para tu equipo? (si/no)`);
+        return;
+      }
+
+      // if currentTeam set and user answers yes/no
+      const low = text.toLowerCase();
+      if (low === 'si' || low === 'sí' || low === 's' || low === 'ok' || low === 'yes') {
+        addBotMessage('Voy a buscar partidos y canales relacionados...');
+        const matches = await findMatchesForTeam(currentTeam);
+        showMatchesInChat(matches);
+        return;
+      }
+      if (low === 'no' || low === 'n') {
+        addBotMessage('De acuerdo. Si quieres, puedes escribir otro equipo o usar las sugerencias.');
+        return;
+      }
+
+      // fallback: maybe user typed another team name
+      currentTeam = text;
+      setTeamColors(currentTeam);
+      addBotMessage(`He cambiado a ${currentTeam}. ¿Quieres buscar partidos de hoy para este equipo? (si/no)`);
+    }
+
+    // Inicialización al cargar la página
+    document.addEventListener('DOMContentLoaded', async () => {
+      new Plyr('#player');
+
+      // inicial chat prompt
+      addBotMessage('Hola! ¿De qué equipo eres? Escribe el nombre o usa una sugerencia.');
+
+      // attach chat controls
+      document.getElementById('chat-send').addEventListener('click', () => {
+        const v = document.getElementById('chat-input').value;
+        document.getElementById('chat-input').value = '';
+        handleChatInput(v);
+      });
+      document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const v = e.target.value;
+          e.target.value = '';
+          handleChatInput(v);
+        }
+      });
+
+      // 1. Obtener parámetros GET enviados por la URL (si existen)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('region')) document.getElementById('region').value = urlParams.get('region');
+      if (urlParams.has('is_sports')) document.getElementById('is_sports').value = urlParams.get('is_sports');
+      if (urlParams.has('channel_name')) document.getElementById('channel_name').value = urlParams.get('channel_name');
+
+      // Ejecutar consulta inicial
+      const response = await apiEndpointHandler(urlParams);
+      renderResults(response);
+
+      // Evento de submit del formulario
+      document.getElementById('api-filter-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const searchParams = new URLSearchParams(formData);
+
+        // Actualizar URL sin recargar la página para reflejar los parámetros GET
+        window.history.pushState({}, '', '?' + searchParams.toString());
+
+        const res = await apiEndpointHandler(searchParams);
+        renderResults(res);
+      });
+    });
+  </script>
+</body>
 </html>
