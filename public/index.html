@@ -1,9 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Canales Deportivos IPTV · Chat IA</title>
+  <title>Canales Deportivos IPTV Â· Chat IA</title>
   <!-- Plyr CSS -->
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
   <!-- FontAwesome -->
@@ -203,31 +203,31 @@
     <div>
       <!-- Panel de la API Endpoint -->
       <section class="api-panel">
-        <h3><i class="fa-solid fa-filter"></i> Consulta de API Endpoint (Parámetros GET)</h3>
+        <h3><i class="fa-solid fa-filter"></i> Consulta de API Endpoint (ParÃ¡metros GET)</h3>
         
         <form id="api-filter-form" class="api-form">
-          <!-- Opción 1: Región / País -->
+          <!-- OpciÃ³n 1: RegiÃ³n / PaÃ­s -->
           <div class="form-group">
-            <label for="region">Región o País</label>
+            <label for="region">RegiÃ³n o PaÃ­s</label>
             <select id="region" name="region" class="form-control">
               <option value="all">Todas las regiones (Por defecto)</option>
               <option value="ar">Argentina</option>
-              <option value="es">España</option>
-              <option value="mx">México</option>
-              <option value="latin">Latinoamérica</option>
+              <option value="es">EspaÃ±a</option>
+              <option value="mx">MÃ©xico</option>
+              <option value="latin">LatinoamÃ©rica</option>
             </select>
           </div>
 
-          <!-- Opción 2: Preguntar si es Deportes -->
+          <!-- OpciÃ³n 2: Preguntar si es Deportes -->
           <div class="form-group">
-            <label for="is_sports">¿Categoría Deportes?</label>
+            <label for="is_sports">Â¿CategorÃ­a Deportes?</label>
             <select id="is_sports" name="is_sports" class="form-control">
               <option value="false">Cargar todos los canales (Por defecto)</option>
               <option value="true">Solo canales de Deportes</option>
             </select>
           </div>
 
-          <!-- Opción 3: Nombre del canal o similar (INPUT SOLICITADO) -->
+          <!-- OpciÃ³n 3: Nombre del canal o similar (INPUT SOLICITADO) -->
           <div class="form-group">
             <label for="channel_name">Nombre del canal o coincidencia</label>
             <input type="text" id="channel_name" name="channel_name" class="form-control" placeholder="Ej: ESPN, TyC, Fox, TNT...">
@@ -236,9 +236,9 @@
           <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Consultar API</button>
         </form>
 
-        <!-- Sección con ejemplos de cómo solicitar -->
+        <!-- SecciÃ³n con ejemplos de cÃ³mo solicitar -->
         <div class="examples-box">
-          <h4><i class="fa-solid fa-lightbulb"></i> Ejemplos de cómo solicitar a la API (Click para probar):</h4>
+          <h4><i class="fa-solid fa-lightbulb"></i> Ejemplos de cÃ³mo solicitar a la API (Click para probar):</h4>
           <span class="example-btn" onclick="applyExample('all', 'true', 'ESPN')">?region=all&is_sports=true&channel_name=ESPN</span>
           <span class="example-btn" onclick="applyExample('ar', 'false', '')">?region=ar&is_sports=false&channel_name=</span>
           <span class="example-btn" onclick="applyExample('all', 'true', '')">?is_sports=true (Solo Deportes)</span>
@@ -263,12 +263,12 @@
         <h2>Canales Encontrados (<span id="channel-count">0</span>)</h2>
       </div>
 
-      <!-- Chat Panel añadido -->
+      <!-- Chat Panel aÃ±adido -->
       <div class="chat-panel" id="chat-panel">
         <div class="chat-header">
           <div>
             <strong>Asistente Deportes</strong>
-            <div class="small">Te ayudaré a encontrar partidos y canales</div>
+            <div class="small">Te ayudarÃ© a encontrar partidos y canales</div>
           </div>
           <div id="team-display"></div>
         </div>
@@ -296,12 +296,12 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
   <script>
-    // CONFIG: si tienes un endpoint de "scrub / events" coloca la URL aquí (debe devolver JSON con "events" array)
+    // CONFIG: si tienes un endpoint de "scrub / events" coloca la URL aquÃ­ (debe devolver JSON con "events" array)
     // Formato esperado ejemplo:
     // { events: [ { home: "Team A", away: "Team B", date: "2026-08-15", channels: ["canal1","canal2"], extra: {...} } ] }
     const EVENTS_SCRUB_URL = ""; // poner URL real si existe (CORS permitido)
 
-    // URLs base de GitHub según la región solicitada
+    // URLs base de GitHub segÃºn la regiÃ³n solicitada
     const GITHUB_PRESETS = {
       all: "https://iptv-org.github.io/iptv/index.m3u",
       ar: "https://iptv-org.github.io/iptv/countries/ar.m3u",
@@ -366,12 +366,12 @@
 
       // Aplicar Filtros:
       let filtered = channelsList.filter(ch => {
-        // Opción 2: Filtro Deportes
-        const isSportChannel = ch.group.toLowerCase().includes('sport') || ch.name.toLowerCase().includes('sport');
+        // OpciÃ³n 2: Filtro Deportes
+        const isSportChannel = (ch.group || '').toLowerCase().includes('sport') || (ch.name || '').toLowerCase().includes('sport');
         const matchSports = isSports ? isSportChannel : true;
 
-        // Opción 3: Nombre del canal o coincidencia similar
-        const matchName = channelName ? ch.name.toLowerCase().includes(channelName) : true;
+        // OpciÃ³n 3: Nombre del canal o coincidencia similar
+        const matchName = channelName ? (ch.name || '').toLowerCase().includes(channelName) : true;
 
         return matchSports && matchName;
       });
@@ -402,8 +402,8 @@
       const jsonWrapper = document.getElementById('json-response-wrapper');
 
       listEl.innerHTML = '';
-      jsonWrapper.style.display = 'block';
-      jsonEl.textContent = JSON.stringify(apiResponse, null, 2);
+      if (jsonWrapper) jsonWrapper.style.display = 'block';
+      if (jsonEl) jsonEl.textContent = JSON.stringify(apiResponse, null, 2);
 
       if (apiResponse.status !== 200 || !apiResponse.channels) {
         countEl.textContent = '0';
@@ -418,8 +418,8 @@
         li.className = 'channel-item';
         li.innerHTML = `
           <div>
-            <strong>${ch.channel_name}</strong>
-            <br><small style="color:var(--muted);">${ch.group}</small>
+            <strong>${escapeHtml(ch.channel_name)}</strong>
+            <br><small style="color:var(--muted);">${escapeHtml(ch.group)}</small>
           </div>
           <i class="fa-solid fa-play"></i>
         `;
@@ -434,11 +434,16 @@
 
     // Reproductor de Video
     function playStream(url, element) {
+      // if url was passed encoded via encodeURIComponent, decode it safely
+      try { url = decodeURIComponent(url); } catch (e) { /* ignore if not encoded or malformed */ }
+
       const video = document.getElementById('player');
       document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
       if (element) element.classList.add('active');
 
-      if (hlsPlayer) { hlsPlayer.destroy(); hlsPlayer = null; }
+      if (!url) return;
+
+      if (hlsPlayer) { try { hlsPlayer.destroy(); } catch(e){} hlsPlayer = null; }
 
       if (Hls.isSupported()) {
         hlsPlayer = new Hls();
@@ -471,7 +476,7 @@
 
     function setTeamColors(teamName) {
       const map = {
-        "real madrid": {accent:"#ffffff", accentHover:"#f3f3f3", text="#000000", badgeBg: "#000000"},
+        "real madrid": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000000", badgeBg: "#000000"},
         "barcelona": {accent:"#A50044", accentHover:"#8f003d", text:"#fff", badgeBg: "#004D98"},
         "river": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000", badgeBg: "#e10600"},
         "boca": {accent:"#ffd700", accentHover:"#ffde59", text:"#002f6c", badgeBg: "#002f6c"},
@@ -496,7 +501,7 @@
 
       // show team badge
       const teamDisplay = document.getElementById('team-display');
-      teamDisplay.innerHTML = `<span class="team-badge" style="background:${colors.badgeBg || colors.accent}; color:${colors.text}">${teamName}</span>`;
+      teamDisplay.innerHTML = `<span class="team-badge" style="background:${colors.badgeBg || colors.accent}; color:${colors.text}">${escapeHtml(teamName)}</span>`;
     }
 
     async function findMatchesForTeam(teamName) {
@@ -504,7 +509,7 @@
       const todayISO = new Date().toISOString().slice(0,10);
       let matches = [];
 
-      // 1) intentar con EVENTS_SCRUB_URL si está configurada
+      // 1) intentar con EVENTS_SCRUB_URL si estÃ¡ configurada
       if (EVENTS_SCRUB_URL) {
         try {
           const res = await fetch(EVENTS_SCRUB_URL);
@@ -544,7 +549,7 @@
         regions.forEach(r => {
           const list = cacheChannels[r] || [];
           list.forEach(ch => {
-            if (ch.name.toLowerCase().includes(key) || (ch.group||'').toLowerCase().includes(key)) {
+            if ((ch.name || '').toLowerCase().includes(key) || ((ch.group||'').toLowerCase().includes(key))) {
               foundChannels.push({channel: ch, region: r});
             }
           });
@@ -561,34 +566,41 @@
 
     function showMatchesInChat(matches) {
       if (!matches || matches.length === 0) {
-        addBotMessage('No encontré partidos para hoy con esa búsqueda. Puedo buscar en otros días si quieres.');
+        addBotMessage('No encontrÃ© partidos para hoy con esa bÃºsqueda. Puedo buscar en otros dÃ­as si quieres.');
         return;
       }
 
       matches.forEach(m => {
-        const text = `${m.home || ''} vs ${m.away || ''} — ${m.date || ''}`;
+        const text = `${m.home || ''} vs ${m.away || ''} â€” ${m.date || ''}`;
         let html = `<strong>${escapeHtml(text)}</strong><br/>`;
         if (m.channels && m.channels.length) {
-          html += '<div class="small">Canales relacionados:</div><ul>' + m.channels.map(c => `<li><a href="#" onclick="searchAndPlayChannel(\'${escapeJs(c)}\')">${escapeHtml(c)}</a></li>`).join('') + '</ul>';
+          // usamos encodeURIComponent para pasar nombres seguros en onclick y los decodificamos en el handler
+          html += '<div class="small">Canales relacionados:</div><ul>' + m.channels.map(c => `<li><a href="#" onclick="searchAndPlayChannel('${encodeURIComponent(c)}');return false;">${escapeHtml(c)}</a></li>`).join('') + '</ul>';
         }
         if (m.m3u) {
-          html += `<div class="small">Canal encontrado: <a href="#" onclick="playStream(\'${escapeJs(m.m3u)}\')">Reproducir</a></div>`;
+          html += `<div class="small">Canal encontrado: <a href="#" onclick="playStream('${encodeURIComponent(m.m3u)}');return false;">Reproducir</a></div>`;
         }
         addBotMessage(html, true);
       });
     }
 
     // helper safe strings
-    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function escapeJs(s) { return String(s).replace(/'/g, "\\'`).replace(/\"/g, '\\\"'); }
+    function escapeHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+    function escapeJs(s) {
+      // no longer used for inline handlers; keep a safe basic encoder if needed
+      return String(s || '').replace(/\\/g,'\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
 
     async function searchAndPlayChannel(name) {
+      // decode if it was encoded when inserted into an onclick attribute
+      try { name = decodeURIComponent(name); } catch(e) { /* ignore */ }
+
       // Busca en las listas cargadas por nombre de canal y reproduce el primero que coincida
-      const key = name.toLowerCase();
+      const key = (name || '').toLowerCase();
       for (const region of Object.keys(cacheChannels)) {
         const list = cacheChannels[region] || [];
         for (const ch of list) {
-          if (ch.name.toLowerCase().includes(key)) {
+          if ((ch.name || '').toLowerCase().includes(key)) {
             // seleccionar la lista en el UI
             const fakeResp = { status: 200, total_found: 1, channels: [{channel_name: ch.name, group: ch.group, m3u8_link: ch.m3u8, logo: ch.logo}] };
             renderResults(fakeResp);
@@ -599,7 +611,7 @@
       addBotMessage('No pude encontrar el canal exacto en las playlists cargadas.');
     }
 
-    // Función auxiliar para probar ejemplos predefinidos
+    // FunciÃ³n auxiliar para probar ejemplos predefinidos
     async function applyExample(region, isSports, channelName) {
       document.getElementById('region').value = region;
       document.getElementById('is_sports').value = isSports;
@@ -624,13 +636,13 @@
         // first answer: treat as team name and set colors
         currentTeam = text;
         setTeamColors(currentTeam);
-        addBotMessage(`Perfecto, eres de ${currentTeam}. ¿Quieres que busque los partidos de hoy para tu equipo? (si/no)`);
+        addBotMessage(`Perfecto, eres de ${escapeHtml(currentTeam)}. Â¿Quieres que busque los partidos de hoy para tu equipo? (si/no)`);
         return;
       }
 
       // if currentTeam set and user answers yes/no
       const low = text.toLowerCase();
-      if (low === 'si' || low === 'sí' || low === 's' || low === 'ok' || low === 'yes') {
+      if (low === 'si' || low === 'sÃ­' || low === 's' || low === 'ok' || low === 'yes') {
         addBotMessage('Voy a buscar partidos y canales relacionados...');
         const matches = await findMatchesForTeam(currentTeam);
         showMatchesInChat(matches);
@@ -644,15 +656,15 @@
       // fallback: maybe user typed another team name
       currentTeam = text;
       setTeamColors(currentTeam);
-      addBotMessage(`He cambiado a ${currentTeam}. ¿Quieres buscar partidos de hoy para este equipo? (si/no)`);
+      addBotMessage(`He cambiado a ${escapeHtml(currentTeam)}. Â¿Quieres buscar partidos de hoy para este equipo? (si/no)`);
     }
 
-    // Inicialización al cargar la página
+    // InicializaciÃ³n al cargar la pÃ¡gina
     document.addEventListener('DOMContentLoaded', async () => {
       new Plyr('#player');
 
       // inicial chat prompt
-      addBotMessage('Hola! ¿De qué equipo eres? Escribe el nombre o usa una sugerencia.');
+      addBotMessage('Hola! Â¿De quÃ© equipo eres? Escribe el nombre o usa una sugerencia.');
 
       // attach chat controls
       document.getElementById('chat-send').addEventListener('click', () => {
@@ -669,7 +681,7 @@
         }
       });
 
-      // 1. Obtener parámetros GET enviados por la URL (si existen)
+      // 1. Obtener parÃ¡metros GET enviados por la URL (si existen)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('region')) document.getElementById('region').value = urlParams.get('region');
       if (urlParams.has('is_sports')) document.getElementById('is_sports').value = urlParams.get('is_sports');
@@ -685,7 +697,7 @@
         const formData = new FormData(e.target);
         const searchParams = new URLSearchParams(formData);
 
-        // Actualizar URL sin recargar la página para reflejar los parámetros GET
+        // Actualizar URL sin recargar la pÃ¡gina para reflejar los parÃ¡metros GET
         window.history.pushState({}, '', '?' + searchParams.toString());
 
         const res = await apiEndpointHandler(searchParams);
