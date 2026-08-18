@@ -1,0 +1,291 @@
+// ============================================
+// CLOUDFLARE WORKER - Scraper Cartelera thekotb.com
+// ============================================
+
+export default {
+  async fetch(request, env, ctx) {
+    // Configuración CORS para que pueda ser consumido desde cualquier lado
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Max-Age': '86400',
+    };
+
+    // Responder a preflight CORS
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+
+    try {
+      // Obtener la URL de la cartelera (se puede pasar como parámetro)
+      const url = new URL(request.url);
+      const targetUrl = url.searchParams.get('url') || 'https://www.thekotb.com/';
+      
+      // Si se pide ayuda
+      if (url.searchParams.get('help')) {
+        return new Response(JSON.stringify({
+          uso: 'GET /?url=https://www.thekotb.com/',
+          parametros: {
+            url: 'URL de la cartelera a scrapear (opcional)',
+            formato: 'pretty o compact (opcional)'
+          },
+          ejemplo: 'https://tu-worker.workers.dev/?url=https://www.thekotb.com/cartelera'
+        }, null, 2), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Realizar la petición a la página
+      const response = await fetch(targetUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al obtener la página: ${response.status}`);
+      }
+
+      const html = await response.text();
+
+      // ========================================
+      // PROCESAMIENTO DEL HTML - EXTRACCIÓN DE DATOS
+      // ========================================
+      
+      // Limpiar el HTML para facilitar el parsing
+      const cleanHtml = html.replace(/\s+/g, ' ').replace(/\n/g, ' ');
+
+      // Función para extraer datos usando regex
+      function extraerConRegex(html) {
+        const partidos = [];
+        
+        // Patrón para encontrar bloques de partidos
+        // Busca patrones como: "Equipo1 VS Equipo2" o "Equipo1 - Equipo2"
+        const patronEquipos = /([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)\s*(?:VS|vs|-|—)\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/g;
+        
+        // Patrón para horas
+        const patronHora = /(\d{1,2}:\d{2})\s*(?:AM|PM|a\.m\.|p\.m\.)?/gi;
+        
+        // Patrón para URLs de imágenes (logos)
+        const patronLogo = /<img[^>]*src=["']([^"']*logo[^"']*)["']/gi;
+        
+        // Buscar todas las coincidencias de equipos
+        let matchEquipos;
+        let tempPartidos = [];
+        let horaActual = '';
+        
+        // Primero, extraer todas las horas del documento
+        const horas = [];
+        let matchHora;
+        while ((matchHora = patronHora.exec(html)) !== null) {
+          horas.push(matchHora[1]);
+        }
+        
+        // Extraer los logos
+        const logos = [];
+        let matchLogo;
+        while ((matchLogo = patronLogo.exec(html)) !== null) {
+          if (matchLogo[1] && !matchLogo[1].includes('data:image')) {
+            logos.push(matchLogo[1]);
+          }
+        }
+        
+        // Extraer equipos
+        let index = 0;
+        while ((matchEquipos = patronEquipos.exec(html)) !== null) {
+          const local = matchEquipos[1].trim();
+          const visita = matchEquipos[2].trim();
+          
+          // Buscar hora cercana (en un radio de 200 caracteres)
+          const startIdx = Math.max(0, matchEquipos.index - 200);
+          const endIdx = Math.min(html.length, matchEquipos.index + matchEquipos[0].length + 200);
+          const contexto = html.substring(startIdx, endIdx);
+          
+          let hora = null;
+          let horaMatch;
+          while ((horaMatch = patronHora.exec(contexto)) !== null) {
+            hora = horaMatch[1];
+            break;
+          }
+          
+          // Buscar enlaces a servidores cercanos
+          let urlServidor = null;
+          const patronServidor = /<a[^>]*href=["']([^"']*ver[^"']*|watch[^"']*|servidor[^"']*|live[^"']*)["']/gi;
+          let matchServidor;
+          while ((matchServidor = patronServidor.exec(contexto)) !== null) {
+            if (matchServidor[1] && !matchServidor[1].includes('javascript')) {
+              urlServidor = matchServidor[1].startsWith('http') 
+                ? matchServidor[1] 
+                : new URL(matchServidor[1], 'https://www.thekotb.com').href;
+              break;
+            }
+          }
+          
+          // Buscar logos cercanos
+          let logoLocal = null;
+          let logoVisita = null;
+          const logosEncontrados = logos.filter(logo => {
+            const idx = html.indexOf(logo);
+            return Math.abs(idx - matchEquipos.index) < 500;
+          });
+          
+          if (logosEncontrados.length >= 2) {
+            logoLocal = logosEncontrados[0];
+            logoVisita = logosEncontrados[1];
+          } else if (logosEncontrados.length === 1) {
+            logoLocal = logosEncontrados[0];
+          }
+          
+          if (local && visita && (hora || logosEncontrados.length > 0 || urlServidor)) {
+            partidos.push({
+              id: ++index,
+              equipoLocal: local,
+              equipoVisita: visita,
+              logoLocal: logoLocal || null,
+              logoVisita: logoVisita || null,
+              hora: hora || null,
+              urlServidor: urlServidor || null,
+              fechaExtraccion: new Date().toISOString()
+            });
+          }
+        }
+        
+        return partidos;
+      }
+
+      // Función para extraer usando DOMParser (más preciso)
+      function extraerConDOMParser(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const partidos = [];
+        let id = 0;
+        
+        // Buscar enlaces que parezcan partidos
+        const enlaces = doc.querySelectorAll('a[href*="ver"], a[href*="watch"], a[href*="servidor"], a[href*="live"]');
+        const enlacesSet = new Set();
+        
+        enlaces.forEach(enlace => {
+          const href = enlace.getAttribute('href');
+          if (!href || enlacesSet.has(href)) return;
+          enlacesSet.add(href);
+          
+          const padre = enlace.closest('div, li, article, section');
+          if (!padre) return;
+          
+          const texto = padre.textContent.trim();
+          
+          // Buscar equipos (VS o -)
+          const matchEquipos = texto.match(/([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)\s*(?:VS|vs|-|—)\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/);
+          if (!matchEquipos) return;
+          
+          // Buscar hora
+          const matchHora = texto.match(/(\d{1,2}:\d{2})/);
+          
+          // Buscar imágenes (logos)
+          const imagenes = padre.querySelectorAll('img');
+          const logos = [];
+          imagenes.forEach(img => {
+            const src = img.getAttribute('src');
+            if (src && !src.includes('data:image') && !src.includes('icon') && !src.includes('social')) {
+              logos.push(src.startsWith('http') ? src : new URL(src, 'https://www.thekotb.com').href);
+            }
+          });
+          
+          const urlCompleta = href.startsWith('http') ? href : new URL(href, 'https://www.thekotb.com').href;
+          
+          partidos.push({
+            id: ++id,
+            equipoLocal: matchEquipos[1].trim(),
+            equipoVisita: matchEquipos[2].trim(),
+            logoLocal: logos.length > 0 ? logos[0] : null,
+            logoVisita: logos.length > 1 ? logos[1] : null,
+            hora: matchHora ? matchHora[1] : null,
+            urlServidor: urlCompleta,
+            fechaExtraccion: new Date().toISOString()
+          });
+        });
+        
+        // Si no encontró partidos con DOMParser, intenta con regex
+        if (partidos.length === 0) {
+          return extraerConRegex(html);
+        }
+        
+        return partidos;
+      }
+
+      // ========================================
+      // EJECUTAR EXTRACCIÓN
+      // ========================================
+      
+      let partidos = [];
+      
+      try {
+        // Primero intentar con DOMParser (si está disponible en el worker)
+        partidos = extraerConDOMParser(html);
+      } catch (e) {
+        console.log('Error con DOMParser, usando regex:', e.message);
+        partidos = extraerConRegex(html);
+      }
+      
+      // Limpiar y deduplicar resultados
+      const partidosUnicos = [];
+      const vistos = new Set();
+      
+      partidos.forEach(p => {
+        const clave = `${p.equipoLocal}-${p.equipoVisita}`;
+        if (!vistos.has(clave) && p.equipoLocal && p.equipoVisita) {
+          vistos.add(clave);
+          partidosUnicos.push(p);
+        }
+      });
+
+      // ========================================
+      // CONSTRUIR JSON FINAL
+      // ========================================
+      
+      const formato = url.searchParams.get('formato') || 'pretty';
+      const jsonFinal = {
+        metadata: {
+          urlOrigen: targetUrl,
+          fechaExtraccion: new Date().toISOString(),
+          totalPartidos: partidosUnicos.length,
+          metodo: 'scraping',
+          version: '1.0.0'
+        },
+        cartelera: partidosUnicos
+      };
+
+      // ========================================
+      // DEVOLVER RESPUESTA
+      // ========================================
+      
+      const jsonString = formato === 'compact' 
+        ? JSON.stringify(jsonFinal) 
+        : JSON.stringify(jsonFinal, null, 2);
+
+      return new Response(jsonString, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'public, max-age=60', // Cache de 1 minuto
+        }
+      });
+
+    } catch (error) {
+      // Manejo de errores
+      return new Response(JSON.stringify({
+        error: true,
+        mensaje: error.message,
+        timestamp: new Date().toISOString()
+      }, null, 2), {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+  }
+};
