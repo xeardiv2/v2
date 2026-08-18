@@ -1,431 +1,621 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Canales Deportivos IPTV Â· Chat IA</title>
-  <!-- Plyr CSS -->
-  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Fuentes -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter/400.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter/600.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk/700.css" />
-
-  <!-- Tailwind CSS (CDN) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    :root {
-      --bg: #070d1a;
-      --panel: #0d1626;
-      --panel-2: #111c31;
-      --border: #1e2c45;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --cyan: #38bdf8;
-      --text: #e6edf7;
-      --muted: #8ea0bd;
-      --danger: #ef4444;
-      --success: #22c55e;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; }
-
-    header {
-      background: rgba(13,22,38,.85);
-      backdrop-filter: blur(10px);
-      padding: .85rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .brand { display: flex; align-items: center; gap: .8rem; }
-    .brand-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent), #0ea5e9);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; color: #fff;
-    }
-
-    /* Keep a simple fallback container but let Tailwind manage grid */
-    .container { width:100%; max-width:1600px; margin:0 auto; padding:0 1rem; }
-
-    .api-panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.2rem;
-      margin-bottom: 1.4rem;
-    }
-    .api-form {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      align-items: end;
-      margin-top: 1rem;
-    }
-    .form-group { display: flex; flex-direction: column; gap: .4rem; }
-    .form-group label { font-size: .8rem; color: var(--muted); font-weight: 600; }
-    .form-control {
-      padding: .6rem .8rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-size: .85rem;
-      outline: none;
-    }
-    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
-
-    .btn { padding: .65rem 1.1rem; border-radius: 8px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: none; font-size: .85rem; transition: all .12s; font-family: inherit; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
-
-    .examples-box { margin-top: 1rem; padding: .85rem; background: var(--panel-2); border: 1px dashed var(--border); border-radius: 8px; }
-    .examples-box h4 { font-size: .8rem; color: var(--cyan); margin-bottom: .5rem; }
-    .example-btn { display:inline-block; margin:.2rem .4rem .2rem 0; padding:.25rem .55rem; background: rgba(56,189,248,.06); border:1px solid rgba(56,189,248,.16); color:var(--cyan); border-radius:6px; font-size:.78rem; cursor:pointer; }
-
-    /* Video Player */
-    .video-wrapper { background: #000; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 16 / 9; position: relative; width: 100%; }
-    @supports not (aspect-ratio: 16/9) { .video-wrapper { padding-top: 56.25%; } .video-wrapper video { position:absolute; top:0; left:0; width:100%; height:100%; } }
-    .video-wrapper video { width: 100%; height: 100%; display:block; }
-
-    .playlist-section { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; display:flex; flex-direction:column; overflow:hidden; }
-    .channel-list { list-style:none; overflow-y:auto; flex:1; }
-    .channel-item { padding:.75rem 1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
-    .channel-item:hover { background: rgba(255,255,255,.03); }
-    .channel-item.active { background: rgba(37,99,235,.15); border-left:4px solid var(--accent); }
-
-    /* API JSON Output View: constrain width on widescreen and make discreet */
-    .json-bar { display:flex; gap:.5rem; align-items:center; justify-content:space-between; background:transparent; }
-    .json-toggle { background:transparent; border:1px solid var(--border); color:var(--muted); padding:.35rem .6rem; border-radius:6px; cursor:pointer; font-size:.8rem; }
-    .json-copy { background:transparent; border:1px solid var(--border); color:var(--muted); padding:.35rem .6rem; border-radius:6px; cursor:pointer; font-size:.8rem; }
-    .api-output { background:#040811; border:1px solid var(--border); border-radius:8px; padding:1rem; font-family:monospace; font-size:.75rem; color:var(--cyan); max-height:340px; overflow-y:auto; margin-top:0.5rem; white-space:pre-wrap; max-width: min(92vw, 900px); box-shadow: 0 6px 18px rgba(0,0,0,.45); }
-    .api-output.hidden { display:none; }
-
-    .copy-feedback { font-size:.75rem; color:var(--success); margin-left:.5rem; opacity:0; transition:opacity .18s; }
-    .copy-feedback.show { opacity:1; }
-
-    /* Chat panel fixed on large screens */
-    .chat-panel { background: linear-gradient(180deg, rgba(255,255,255,.02), transparent); border:1px solid var(--border); border-radius:10px; padding:.6rem; margin:.85rem 1rem; display:flex; flex-direction:column; gap:.5rem; }
-    .chat-header { display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.4rem .6rem; border-radius:8px; background: rgba(255,255,255,.02); }
-    .messages { max-height:240px; overflow-y:auto; padding:.5rem; display:flex; flex-direction:column; gap:.45rem; }
-    .msg { padding:.5rem .7rem; border-radius:8px; max-width:95%; font-size:.9rem; line-height:1.2; }
-    .msg.bot { background: rgba(255,255,255,.03); color:var(--muted); align-self:flex-start; }
-    .msg.user { background: linear-gradient(90deg,var(--accent),var(--accent-hover)); color:#fff; align-self:flex-end; }
-    .chat-controls { display:flex; gap:.5rem; align-items:center; padding-top:.4rem; }
-    .team-badge { padding:.25rem .5rem; border-radius:6px; font-weight:700; color:#fff; font-size:.85rem; display:inline-block; }
-    .quick-btn { background: rgba(255,255,255,.03); border:1px solid var(--border); color:var(--muted); padding:.25rem .5rem; border-radius:6px; cursor:pointer; }
-    .chat-input { flex:1; padding:.45rem .6rem; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); }
-
-    @media (min-width: 1024px) {
-      .chat-panel { position:fixed; right:1.5rem; top:86px; width:360px; max-height: calc(100vh - 110px); overflow:auto; z-index:90; }
-      /* leave space for the fixed chat by adding right padding to main content on wide screens */
-      main { padding-right: 420px; }
-    }
-
-    @media (max-width: 1024px) {
-      .chat-panel { position:relative; width:auto; max-height:none; }
-      main { padding-right: 0; }
-    }
-  </style>
-</head>
-<body class="antialiased bg-slate-900">
-
-  <header class="w-full">
-    <div class="brand px-4 lg:px-8 py-3">
-      <div class="brand-icon" id="brand-icon"><i class="fa-solid fa-code"></i></div>
-      <div>
-        <h1 id="brand-title">Canales IPTV v1.2</h1>
-        <span class="text-sm" style="color:var(--muted);">API Endpoint con Filtros GET y Chat IA</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Responsive grid: 1 column on mobile, 2 columns on lg (main + sidebar) -->
-  <main class="mx-auto max-w-7xl px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 container">
-    <div class="space-y-4">
-      <!-- API panel -->
-      <section class="api-panel">
-        <h3 class="text-lg font-semibold"><i class="fa-solid fa-filter"></i> Consulta de API Endpoint (Parámetros GET)</h3>
-
-        <form id="api-filter-form" class="api-form">
-          <div class="form-group">
-            <label for="region">Región o País</label>
-            <select id="region" name="region" class="form-control">
-              <option value="all">Todas las regiones (Por defecto)</option>
-              <option value="ar">Argentina</option>
-              <option value="es">España</option>
-              <option value="mx">México</option>
-              <option value="latin">Latinoamérica</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="is_sports">¿Categoría Deportes?</label>
-            <select id="is_sports" name="is_sports" class="form-control">
-              <option value="false">Cargar todos los canales (Por defecto)</option>
-              <option value="true">Solo canales de Deportes</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="channel_name">Nombre del canal o coincidencia</label>
-            <input type="text" id="channel_name" name="channel_name" class="form-control" placeholder="Ej: ESPN, TyC, Fox, TNT...">
-          </div>
-
-          <button type="submit" class="btn btn-primary"> <i class="fa-solid fa-magnifying-glass"></i> Consultar API</button>
-        </form>
-
-        <div class="examples-box">
-          <h4><i class="fa-solid fa-lightbulb"></i> Ejemplos de cómo solicitar a la API (Click para probar):</h4>
-          <span class="example-btn" onclick="applyExample('all', 'true', 'ESPN')">?region=all&is_sports=true&channel_name=ESPN</span>
-          <span class="example-btn" onclick="applyExample('ar', 'false', '')">?region=ar&is_sports=false&channel_name=</span>
-          <span class="example-btn" onclick="applyExample('all', 'true', '')">?is_sports=true (Solo Deportes)</span>
-          <span class="example-btn" onclick="applyExample('all', 'false', 'Fox')">?channel_name=Fox</span>
-        </div>
-
-        <!-- JSON response: discreet header + collapsible pre -->
-        <div id="json-response-wrapper" style="margin-top: 1rem;">
-          <div class="json-bar">
-            <div style="display:flex; align-items:center; gap:.6rem;">
-              <button id="json-toggle-btn" class="json-toggle" onclick="toggleJson()"><i class="fa-solid fa-chevron-down"></i> Ver JSON</button>
-              <button id="json-copy-btn" class="json-copy" onclick="copyJson()" title="Copiar JSON"><i class="fa-regular fa-copy"></i> Copiar</button>
-              <span id="copy-feedback" class="copy-feedback">Copiado!</span>
-            </div>
-            <div style="color:var(--muted); font-size:.82rem;">Respuesta JSON (discreta)</div>
-          </div>
-          <pre class="api-output hidden" id="json-response"></pre>
-        </div>
-
-      </section>
-
-      <!-- Video -->
-      <div class="video-wrapper mt-4">
-        <video id="player" controls playsinline></video>
-      </div>
-    </div>
-
-    <!-- Sidebar: channels + (chat fixed on large screens) -->
-    <aside class="playlist-section">
-      <div class="p-4" style="padding: 1rem; border-bottom: 1px solid var(--border); background: var(--panel-2);">
-        <h2>Canales Encontrados (<span id="channel-count">0</span>)</h2>
-      </div>
-
-      <!-- Chat panel (will be fixed on large screens) -->
-      <div class="chat-panel" id="chat-panel">
-        <div class="chat-header">
-          <div>
-            <strong>Asistente Deportes</strong>
-            <div class="small">Te ayudaré a encontrar partidos y canales</div>
-          </div>
-          <div id="team-display"></div>
-        </div>
-
-        <div class="messages" id="chat-messages" aria-live="polite"></div>
-
-        <div class="chat-controls">
-          <input id="chat-input" class="chat-input" placeholder="Escribe tu equipo o pulsa una sugerencia..." />
-          <button id="chat-send" class="btn btn-primary">Enviar</button>
-        </div>
-
-        <div class="flex gap-2 pt-2 px-2">
-          <button class="quick-btn" onclick="suggestTeam('Real Madrid')">Real Madrid</button>
-          <button class="quick-btn" onclick="suggestTeam('Barcelona')">Barcelona</button>
-          <button class="quick-btn" onclick="suggestTeam('River')">River</button>
-          <button class="quick-btn" onclick="suggestTeam('Boca')">Boca</button>
-          <button class="quick-btn" onclick="suggestTeam('Manchester United')">ManU</button>
-        </div>
-      </div>
-
-      <ul class="channel-list" id="channel-list" style="margin-top:1rem;"></ul>
-    </aside>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-  <script>
-    const EVENTS_SCRUB_URL = "";
-
-    const GITHUB_PRESETS = {
-      all: "https://iptv-org.github.io/iptv/index.m3u",
-      ar: "https://iptv-org.github.io/iptv/countries/ar.m3u",
-      es: "https://iptv-org.github.io/iptv/countries/es.m3u",
-      mx: "https://iptv-org.github.io/iptv/countries/mx.m3u",
-      latin: "https://iptv-org.github.io/iptv/countries/latin.m3u"
-    };
-
-    let cacheChannels = {};
-    let hlsPlayer = null;
-    let currentTeam = null;
-
-    function parseM3U(text) {
-      const lines = text.split(/\r?\n/);
-      const channels = [];
-      let current = null;
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('#EXTINF:')) {
-          const name = trimmed.substring(trimmed.lastIndexOf(',') + 1).trim();
-          const groupMatch = trimmed.match(/group-title=\"([^\"]*)\"/);
-          const logoMatch = trimmed.match(/tvg-logo=\"([^\"]*)\"/);
-
-          current = { name: name, group: groupMatch ? groupMatch[1] : 'General', logo: logoMatch ? logoMatch[1] : '' };
-        } else if (trimmed && !trimmed.startsWith('#')) {
-          if (current) { current.m3u8 = trimmed; channels.push(current); current = null; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartelera Deportiva En Vivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-      }
-      return channels;
-    }
 
-    async function apiEndpointHandler(params) {
-      const region = params.get('region') || 'all';
-      const isSports = params.get('is_sports') === 'true';
-      const channelName = (params.get('channel_name') || '').toLowerCase().trim();
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e17;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-      const playlistUrl = GITHUB_PRESETS[region] || GITHUB_PRESETS.all;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-      if (!cacheChannels[region]) {
-        try { const res = await fetch(playlistUrl); const text = await res.text(); cacheChannels[region] = parseM3U(text); }
-        catch (e) { return { status: 500, error: "Error al obtener la playlist desde GitHub" }; }
-      }
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #1a1f2e, #0d1117);
+            border-radius: 16px;
+            padding: 25px 35px;
+            margin-bottom: 25px;
+            border: 1px solid #2a2f3e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 
-      let channelsList = cacheChannels[region];
+        .header h1 {
+            font-size: 26px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-      let filtered = channelsList.filter(ch => {
-        const isSportChannel = (ch.group || '').toLowerCase().includes('sport') || (ch.name || '').toLowerCase().includes('sport');
-        const matchSports = isSports ? isSportChannel : true;
-        const matchName = channelName ? (ch.name || '').toLowerCase().includes(channelName) : true;
-        return matchSports && matchName;
-      });
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
 
-      return { status: 200, total_found: filtered.length, params_received: { region: region, is_sports: isSports, channel_name: channelName || null }, channels: filtered.map(c => ({ channel_name: c.name, group: c.group, m3u8_link: c.m3u8, logo: c.logo })) };
-    }
+        .badge {
+            background: #1a2a3a;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            border: 1px solid #2a4a5a;
+        }
 
-    function renderResults(apiResponse) {
-      const listEl = document.getElementById('channel-list');
-      const countEl = document.getElementById('channel-count');
-      const jsonEl = document.getElementById('json-response');
-      const jsonWrapper = document.getElementById('json-response-wrapper');
+        .badge .numero {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 18px;
+        }
 
-      listEl.innerHTML = '';
-      if (jsonWrapper) jsonWrapper.style.display = 'block';
-      if (jsonEl) jsonEl.textContent = JSON.stringify(apiResponse, null, 2);
+        .btn-actualizar {
+            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
 
-      if (apiResponse.status !== 200 || !apiResponse.channels) {
-        countEl.textContent = '0';
-        listEl.innerHTML = '<li style="padding:1rem; color:var(--muted);">Sin canales encontrados para esta consulta.</li>';
-        return;
-      }
+        .btn-actualizar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
+        }
 
-      countEl.textContent = apiResponse.total_found;
+        .btn-actualizar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
 
-      apiResponse.channels.forEach((ch) => {
-        const li = document.createElement('li');
-        li.className = 'channel-item';
-        li.innerHTML = `\n          <div>\n            <strong>${escapeHtml(ch.channel_name)}</strong>\n            <br><small style="color:var(--muted);">${escapeHtml(ch.group)}</small>\n          </div>\n          <i class="fa-solid fa-play"></i>\n        `;
-        li.addEventListener('click', () => playStream(ch.m3u8_link, li));
-        listEl.appendChild(li);
-      });
+        /* CONTROLES */
+        .controles {
+            background: #111827;
+            border-radius: 12px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            border: 1px solid #1f2937;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
-      if (apiResponse.channels.length > 0) { playStream(apiResponse.channels[0].m3u8_link, listEl.children[0]); }
-    }
+        .controles label {
+            font-size: 14px;
+            color: #9ca3af;
+        }
 
-    function playStream(url, element) {
-      try { url = decodeURIComponent(url); } catch (e) { }
-      const video = document.getElementById('player');
-      document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
-      if (element) element.classList.add('active');
-      if (!url) return;
-      if (hlsPlayer) { try { hlsPlayer.destroy(); } catch(e){} hlsPlayer = null; }
-      if (Hls.isSupported()) { hlsPlayer = new Hls(); hlsPlayer.loadSource(url); hlsPlayer.attachMedia(video); hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {})); }
-      else if (video.canPlayType('application/vnd.apple.mpegurl')) { video.src = url; video.play().catch(() => {}); }
-    }
+        .controles input {
+            flex: 1;
+            min-width: 250px;
+            background: #1a2332;
+            border: 1px solid #2a3a4a;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
 
-    // --- Chat logic ---
-    function addBotMessage(text, html=false) { const container = document.getElementById('chat-messages'); const div = document.createElement('div'); div.className = 'msg bot'; if (html) div.innerHTML = text; else div.textContent = text; container.appendChild(div); container.scrollTop = container.scrollHeight; }
-    function addUserMessage(text) { const container = document.getElementById('chat-messages'); const div = document.createElement('div'); div.className = 'msg user'; div.textContent = text; container.appendChild(div); container.scrollTop = container.scrollHeight; }
+        .controles input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
 
-    function setTeamColors(teamName) {
-      const map = {"real madrid": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000000", badgeBg: "#000000"},"barcelona": {accent:"#A50044", accentHover:"#8f003d", text:"#fff", badgeBg: "#004D98"},"river": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000", badgeBg: "#e10600"},"boca": {accent:"#ffd700", accentHover:"#ffde59", text:"#002f6c", badgeBg: "#002f6c"},"manchester united": {accent:"#da291c", accentHover:"#b71c1c", text:"#fff", badgeBg: "#000000"},"manu": {accent:"#da291c", accentHover:"#b71c1c", text:"#fff", badgeBg: "#000000"},"real": {accent:"#ffffff", accentHover:"#f3f3f3", text:"#000", badgeBg: "#000000"}};
-      const key = teamName.toLowerCase(); let colors = map[key]; if (!colors) { const hash = Array.from(teamName).reduce((s,c)=> ((s<<5)-s)+c.charCodeAt(0), 0); const hue = Math.abs(hash) % 360; colors = {accent: `hsl(${hue} 80% 55%)`, accentHover: `hsl(${hue} 75% 45%)`, text: '#fff', badgeBg: `hsl(${hue} 60% 35%)`}; }
-      document.documentElement.style.setProperty('--accent', colors.accent); document.documentElement.style.setProperty('--accent-hover', colors.accentHover); const brandIcon = document.getElementById('brand-icon'); if (brandIcon) brandIcon.style.background = `linear-gradient(135deg, ${colors.accent}, ${colors.accentHover})`; const teamDisplay = document.getElementById('team-display'); teamDisplay.innerHTML = `<span class="team-badge" style="background:${colors.badgeBg || colors.accent}; color:${colors.text}">${escapeHtml(teamName)}</span>`;
-    }
+        .controles .btn-pequeno {
+            background: #1a2a3a;
+            border: 1px solid #2a4a5a;
+            color: white;
+            padding: 9px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
 
-    async function findMatchesForTeam(teamName) {
-      addBotMessage('Buscando partidos para ' + teamName + '...');
-      const todayISO = new Date().toISOString().slice(0,10); let matches = [];
-      if (EVENTS_SCRUB_URL) {
-        try { const res = await fetch(EVENTS_SCRUB_URL); if (res.ok) { const data = await res.json(); if (Array.isArray(data.events)) { matches = data.events.filter(e => { const matchDate = (e.date||'').slice(0,10); const home = (e.home||'').toLowerCase(); const away = (e.away||'').toLowerCase(); const key = teamName.toLowerCase(); return matchDate === todayISO && (home.includes(key) || away.includes(key)); }); } } } catch (e) { console.warn('Error al consultar EVENTS_SCRUB_URL', e); } }
+        .controles .btn-pequeno:hover {
+            background: #2a3a4a;
+        }
 
-      if (matches.length === 0) {
-        const regions = Object.keys(GITHUB_PRESETS);
-        for (const region of regions) { if (!cacheChannels[region]) { try { const res = await fetch(GITHUB_PRESETS[region]); const text = await res.text(); cacheChannels[region] = parseM3U(text); } catch (e) { } } }
-        const key = teamName.toLowerCase(); const foundChannels = [];
-        regions.forEach(r => { const list = cacheChannels[r] || []; list.forEach(ch => { if ((ch.name || '').toLowerCase().includes(key) || ((ch.group||'').toLowerCase().includes(key))) { foundChannels.push({channel: ch, region: r}); } }); });
-        if (foundChannels.length > 0) { matches = foundChannels.map(fc => ({home: teamName, away: '', date: todayISO, channels: [fc.channel.name], m3u: fc.channel.m3u8, group: fc.channel.group})); }
-      }
-      return matches;
-    }
+        /* ESTADO DE CARGA */
+        .loading {
+            text-align: center;
+            padding: 80px 20px;
+        }
 
-    function showMatchesInChat(matches) {
-      if (!matches || matches.length === 0) { addBotMessage('No encontré partidos para hoy con esa búsqueda. Puedo buscar en otros días si quieres.'); return; }
-      matches.forEach(m => { const text = `${m.home || ''} vs ${m.away || ''} — ${m.date || ''}`; let html = `<strong>${escapeHtml(text)}</strong><br/>`; if (m.channels && m.channels.length) { html += '<div class="small">Canales relacionados:</div><ul>' + m.channels.map(c => `<li><a href="#" onclick="searchAndPlayChannel('${encodeURIComponent(c)}');return false;">${escapeHtml(c)}</a></li>`).join('') + '</ul>'; } if (m.m3u) { html += `<div class="small">Canal encontrado: <a href="#" onclick="playStream('${encodeURIComponent(m.m3u)}');return false;">Reproducir</a></div>`; } addBotMessage(html, true); });
-    }
+        .spinner {
+            width: 45px;
+            height: 45px;
+            border: 4px solid #1a2a3a;
+            border-top: 4px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
 
-    function escapeHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-    function escapeJs(s) { return String(s || '').replace(/\\/g,'\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"'); }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-    async function searchAndPlayChannel(name) { try { name = decodeURIComponent(name); } catch(e) { } const key = (name || '').toLowerCase(); for (const region of Object.keys(cacheChannels)) { const list = cacheChannels[region] || []; for (const ch of list) { if ((ch.name || '').toLowerCase().includes(key)) { const fakeResp = { status: 200, total_found: 1, channels: [{channel_name: ch.name, group: ch.group, m3u8_link: ch.m3u8, logo: ch.logo}] }; renderResults(fakeResp); return; } } } addBotMessage('No pude encontrar el canal exacto en las playlists cargadas.'); }
+        /* GRID DE PARTIDOS */
+        .grid-partidos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 20px;
+        }
 
-    async function applyExample(region, isSports, channelName) { document.getElementById('region').value = region; document.getElementById('is_sports').value = isSports; document.getElementById('channel_name').value = channelName; const params = new URLSearchParams({ region, is_sports: isSports, channel_name: channelName }); window.history.pushState({}, '', '?' + params.toString()); const res = await apiEndpointHandler(params); renderResults(res); }
+        .partido-card {
+            background: linear-gradient(145deg, #141b2b, #0d1220);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #1f2a3a;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.4s ease forwards;
+            opacity: 0;
+        }
 
-    function suggestTeam(t) { document.getElementById('chat-input').value = t; document.getElementById('chat-send').focus(); }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    async function handleChatInput(raw) {
-      const text = (raw||'').trim(); if (!text) return; addUserMessage(text); if (!currentTeam) { currentTeam = text; setTeamColors(currentTeam); addBotMessage(`Perfecto, eres de ${escapeHtml(currentTeam)}. ¿Quieres que busque los partidos de hoy para tu equipo? (si/no)`); return; }
-      const low = text.toLowerCase(); if (low === 'si' || low === 'sí' || low === 's' || low === 'ok' || low === 'yes') { addBotMessage('Voy a buscar partidos y canales relacionados...'); const matches = await findMatchesForTeam(currentTeam); showMatchesInChat(matches); return; } if (low === 'no' || low === 'n') { addBotMessage('De acuerdo. Si quieres, puedes escribir otro equipo o usar las sugerencias.'); return; }
-      currentTeam = text; setTeamColors(currentTeam); addBotMessage(`He cambiado a ${escapeHtml(currentTeam)}. ¿Quieres buscar partidos de hoy para este equipo? (si/no)`);
-    }
+        .partido-card:hover {
+            transform: translateY(-4px);
+            border-color: #2a4a6a;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        }
 
-    // JSON toggle + copy helpers
-    function toggleJson() {
-      const pre = document.getElementById('json-response'); const btn = document.getElementById('json-toggle-btn'); if (!pre) return; if (pre.classList.contains('hidden')) { pre.classList.remove('hidden'); btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> Ocultar JSON'; } else { pre.classList.add('hidden'); btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Ver JSON'; } }
-    async function copyJson() { const pre = document.getElementById('json-response'); const fb = document.getElementById('copy-feedback'); if (!pre) return; try { await navigator.clipboard.writeText(pre.textContent || ''); fb.classList.add('show'); setTimeout(()=>fb.classList.remove('show'), 1400); } catch(e) { console.warn('No se pudo copiar', e); } }
+        .partido-card .id-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #1a2a3a;
+            color: #6a8aaa;
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 12px;
+        }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      new Plyr('#player'); addBotMessage('Hola! ¿De qué equipo eres? Escribe el nombre o usa una sugerencia.');
+        .equipos {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 15px 0 10px;
+        }
 
-      document.getElementById('chat-send').addEventListener('click', () => { const v = document.getElementById('chat-input').value; document.getElementById('chat-input').value = ''; handleChatInput(v); });
-      document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); const v = e.target.value; e.target.value = ''; handleChatInput(v); } });
+        .equipo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
 
-      const urlParams = new URLSearchParams(window.location.search); if (urlParams.has('region')) document.getElementById('region').value = urlParams.get('region'); if (urlParams.has('is_sports')) document.getElementById('is_sports').value = urlParams.get('is_sports'); if (urlParams.has('channel_name')) document.getElementById('channel_name').value = urlParams.get('channel_name');
+        .equipo img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: #0a0e17;
+            padding: 4px;
+            border: 2px solid #1f2a3a;
+        }
 
-      const response = await apiEndpointHandler(urlParams); renderResults(response);
+        .equipo .nombre {
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            color: #e0e0e0;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
-      document.getElementById('api-filter-form').addEventListener('submit', async (e) => { e.preventDefault(); const formData = new FormData(e.target); const searchParams = new URLSearchParams(formData); window.history.pushState({}, '', '?' + searchParams.toString()); const res = await apiEndpointHandler(searchParams); renderResults(res); });
-    });
-  </script>
+        .vs {
+            color: #4a6a8a;
+            font-weight: bold;
+            font-size: 13px;
+            padding: 0 8px;
+        }
 
-  <!-- Footer: banner solicitado por el usuario -->
-  <footer class="w-full mt-6" style="padding:1rem; border-top:1px solid var(--border); background: rgba(13,22,38,.6); display:flex; justify-content:center;">
-    <a href="" rel="nofollow noopener noreferrer" target="_blank"><img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/728%20x%2090%20px.png" style="max-width:100%; height:auto; display:block;" /></a>
-  </footer>
+        .info-partido {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #1a2a3a;
+        }
 
+        .hora {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        .btn-ver {
+            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
+            color: white;
+            padding: 7px 18px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-ver:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-ver.sin-enlace {
+            background: #1a2a3a;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .sin-datos {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6a8aaa;
+        }
+
+        .sin-datos .icono-grande {
+            font-size: 56px;
+            margin-bottom: 15px;
+        }
+
+        /* JSON VISOR */
+        .json-raw {
+            margin-top: 40px;
+            background: #0a0e17;
+            border-radius: 12px;
+            border: 1px solid #1a2a3a;
+            overflow: hidden;
+        }
+
+        .json-raw .toggle {
+            background: #111827;
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .json-raw pre {
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 350px;
+            overflow-y: auto;
+            display: none;
+            background: #06090f;
+            color: #a7f3d0;
+        }
+
+        .json-raw pre.mostrar {
+            display: block;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #3a4a5a;
+            font-size: 13px;
+            padding: 20px;
+            border-top: 1px solid #1a2a3a;
+        }
+
+        .footer a {
+            color: #6a8aaa;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <header class="header">
+            <h1>⚽ Cartelera Deportiva</h1>
+            <div class="header-info">
+                <span class="badge">📅 <span id="fechaActual">-</span></span>
+                <span class="badge">🏟️ <span class="numero" id="totalPartidos">0</span> partidos</span>
+                <button class="btn-actualizar" id="btnActualizar" onclick="cargarDatos()">🔄 Actualizar</button>
+            </div>
+        </header>
+
+        <!-- CONTROLES DE CONFIGURACIÓN -->
+        <div class="controles">
+            <label for="urlWorker">🌐 Worker / API Source:</label>
+            <input type="url" id="urlWorker" placeholder="https://tu-worker.workers.dev/" value="https://tu-worker.workers.dev/">
+            <button class="btn-pequeno" onclick="cargarDatos()">📥 Cargar</button>
+            <button class="btn-pequeno" onclick="usarScraperDirecto()">⚡ Forzar Carga Directa</button>
+            <button class="btn-pequeno" onclick="toggleJSON()">📄 Ver JSON</button>
+        </div>
+
+        <!-- CONTENEDOR DE PARTIDOS -->
+        <div id="contenedorPartidos">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Cargando cartelera de partidos...</p>
+            </div>
+        </div>
+
+        <!-- VISOR JSON -->
+        <div class="json-raw">
+            <div class="toggle" onclick="toggleJSON()">
+                <span>📄 Ver estructura JSON recibida</span>
+                <span id="toggleIcon">▶</span>
+            </div>
+            <pre id="jsonContent"></pre>
+        </div>
+
+        <footer class="footer">
+            Datos consolidados de <a href="https://www.thekotb.com/" target="_blank">thekotb.com</a> · Auto-actualización activa
+        </footer>
+
+    </div>
+
+    <script>
+        const SVG_FALLBACK = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%231a2a3a" width="100" height="100"/%3E%3Ctext x="50" y="55" text-anchor="middle" fill="%234a6a8a" font-size="30" font-family="Arial"%3E⚽%3C/text%3E%3C/svg%3E';
+
+        // ========================================
+        // CARGA Y PROCESAMIENTO AUTOMÁTICO
+        // ========================================
+        async function cargarDatos() {
+            const btn = document.getElementById('btnActualizar');
+            const contenedor = document.getElementById('contenedorPartidos');
+            const urlWorker = document.getElementById('urlWorker').value.trim();
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Cargando...';
+            contenedor.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Obteniendo todos los partidos de la cartelera...</p>
+                </div>
+            `;
+
+            try {
+                let data = null;
+
+                // Intentar leer datos desde el Worker configurado
+                if (urlWorker && !urlWorker.includes('tu-worker.workers.dev')) {
+                    const response = await fetch(urlWorker, { method: 'GET', headers: { 'Accept': 'application/json' } });
+                    if (response.ok) {
+                        data = await response.json();
+                    }
+                }
+
+                // Fallback: Si el worker no está listo o es URL por defecto, realizar scraping directo por proxy
+                if (!data || !data.cartelera || data.cartelera.length === 0) {
+                    data = await obtenerDatosDirectosScraped();
+                }
+
+                renderizarPartidos(data);
+                actualizarStats(data);
+                mostrarJSON(data);
+
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                contenedor.innerHTML = `
+                    <div class="sin-datos">
+                        <div class="icono-grande">❌</div>
+                        <h2>Error al procesar la cartelera</h2>
+                        <p style="margin-top:8px;">${error.message}</p>
+                        <button class="btn-actualizar" style="margin-top:20px;" onclick="cargarDatos()">🔄 Reintentar</button>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 Actualizar';
+            }
+        }
+
+        // ========================================
+        // SCRAPER DE RESPALDO (Directo al HTML)
+        // ========================================
+        async function obtenerDatosDirectosScraped() {
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.thekotb.com/');
+            const res = await fetch(proxyUrl);
+            const htmlText = await res.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            const partidos = [];
+
+            // Extraer nodos de partidos del sitio de origen
+            const filas = doc.querySelectorAll('tr, .match-item, .event, .card, a[href*="server"]');
+
+            filas.forEach((el, idx) => {
+                const texto = el.textContent || '';
+                if (texto.includes('VS') || texto.includes('vs') || texto.includes('-')) {
+                    const imgs = el.querySelectorAll('img');
+                    const link = el.querySelector('a') || (el.tagName === 'A' ? el : null);
+
+                    let local = 'Equipo Local';
+                    let visita = 'Equipo Visita';
+
+                    const partes = texto.split(/VS|vs|-/);
+                    if (partes.length >= 2) {
+                        local = partes[0].trim().replace(/\s+/g, ' ').slice(-20) || local;
+                        visita = partes[1].trim().replace(/\s+/g, ' ').slice(0, 20) || visita;
+                    }
+
+                    partidos.push({
+                        id: idx + 1,
+                        equipoLocal: local,
+                        equipoVisita: visita,
+                        logoLocal: imgs[0] ? imgs[0].src : SVG_FALLBACK,
+                        logoVisita: imgs[1] ? imgs[1].src : SVG_FALLBACK,
+                        hora: 'En vivo / Hoy',
+                        urlServidor: link ? link.href : null
+                    });
+                }
+            });
+
+            return {
+                metadata: { fechaExtraccion: new Date().toISOString() },
+                cartelera: partidos
+            };
+        }
+
+        function usarScraperDirecto() {
+            document.getElementById('urlWorker').value = 'https://tu-worker.workers.dev/';
+            cargarDatos();
+        }
+
+        // ========================================
+        // RENDERIZADO COMPLETO (Sin recortes)
+        // ========================================
+        function renderizarPartidos(data) {
+            const contenedor = document.getElementById('contenedorPartidos');
+            const partidos = data.cartelera || [];
+
+            if (partidos.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="sin-datos">
+                        <div class="icono-grande">🏟️</div>
+                        <h2>No se encontraron partidos</h2>
+                        <p>No hay eventos disponibles en este momento.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="grid-partidos">';
+
+            partidos.forEach((partido, index) => {
+                const tieneEnlace = partido.urlServidor && partido.urlServidor !== 'null';
+                const logoLocal = partido.logoLocal || SVG_FALLBACK;
+                const logoVisita = partido.logoVisita || SVG_FALLBACK;
+                const delay = Math.min(index * 0.02, 0.8);
+
+                html += `
+                    <div class="partido-card" style="animation-delay: ${delay}s">
+                        <span class="id-badge">#${partido.id || index + 1}</span>
+                        
+                        <div class="equipos">
+                            <div class="equipo">
+                                <img src="${logoLocal}" alt="${partido.equipoLocal}" onerror="this.src='${SVG_FALLBACK}'">
+                                <span class="nombre" title="${partido.equipoLocal}">${partido.equipoLocal}</span>
+                            </div>
+                            
+                            <div class="vs">VS</div>
+                            
+                            <div class="equipo">
+                                <img src="${logoVisita}" alt="${partido.equipoVisita}" onerror="this.src='${SVG_FALLBACK}'">
+                                <span class="nombre" title="${partido.equipoVisita}">${partido.equipoVisita}</span>
+                            </div>
+                        </div>
+
+                        <div class="info-partido">
+                            <div class="hora">
+                                <span>🕐</span>
+                                <span>${partido.hora || 'Por confirmar'}</span>
+                            </div>
+                            ${tieneEnlace 
+                                ? `<a href="${partido.urlServidor}" target="_blank" class="btn-ver">▶ Ver partido</a>`
+                                : `<span class="btn-ver sin-enlace">🔒 Sin enlace</span>`
+                            }
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            contenedor.innerHTML = html;
+        }
+
+        // ========================================
+        // ESTADÍSTICAS Y MANTENIMIENTO
+        // ========================================
+        function actualizarStats(data) {
+            const total = data.cartelera?.length || 0;
+            document.getElementById('totalPartidos').textContent = total;
+
+            const fecha = new Date(data.metadata?.fechaExtraccion || Date.now());
+            document.getElementById('fechaActual').textContent = fecha.toLocaleString('es-ES', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function mostrarJSON(data) {
+            document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
+        }
+
+        function toggleJSON() {
+            const pre = document.getElementById('jsonContent');
+            const icon = document.getElementById('toggleIcon');
+            if (pre.classList.contains('mostrar')) {
+                pre.classList.remove('mostrar');
+                icon.textContent = '▶';
+            } else {
+                pre.classList.add('mostrar');
+                icon.textContent = '▼';
+            }
+        }
+
+        // Al cargar la página, ejecuta la obtención de datos inmediatamente
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlGuardada = localStorage.getItem('workerUrl');
+            if (urlGuardada) {
+                document.getElementById('urlWorker').value = urlGuardada;
+            }
+
+            document.getElementById('urlWorker').addEventListener('change', function() {
+                localStorage.setItem('workerUrl', this.value);
+            });
+
+            // Carga automática inicial
+            cargarDatos();
+
+            // Refresco automático cada 60 segundos
+            setInterval(() => {
+                cargarDatos();
+            }, 60000);
+        });
+    </script>
 </body>
 </html>
