@@ -1,380 +1,701 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestor & Procesador de Archivos HTML</title>
-  <style>
-    :root {
-      --bg-dark: #0a0b0e;
-      --card-bg: #12141a;
-      --card-border: rgba(224, 170, 62, 0.25);
-      --gold-primary: #e0aa3e;
-      --gold-gradient: linear-gradient(135deg, #f7d070 0%, #e0aa3e 50%, #b8860b 100%);
-      --text-main: #f0f2f5;
-      --text-muted: #9aa0a6;
-      --accent-green: #00e676;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartelera Deportiva En Vivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e17;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-    body {
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 24px;
-    }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-    header {
-      text-align: center;
-      margin-bottom: 28px;
-    }
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #1a1f2e, #0d1117);
+            border-radius: 16px;
+            padding: 25px 35px;
+            margin-bottom: 25px;
+            border: 1px solid #2a2f3e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 
-    header h1 {
-      font-size: 2rem;
-      background: var(--gold-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 8px;
-    }
+        .header h1 {
+            font-size: 26px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    header p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-    }
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
 
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+        .badge {
+            background: #1a2a3a;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            border: 1px solid #2a4a5a;
+        }
 
-    /* Area de Carga Drag & Drop */
-    .upload-section {
-      background: var(--card-bg);
-      border: 2px dashed var(--gold-primary);
-      border-radius: 12px;
-      padding: 36px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+        .badge .numero {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 18px;
+        }
 
-    .upload-section:hover, .upload-section.dragover {
-      background: rgba(224, 170, 62, 0.08);
-      border-color: #f7d070;
-      transform: translateY(-2px);
-    }
+        .btn-actualizar {
+            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
 
-    .upload-icon {
-      font-size: 40px;
-      margin-bottom: 12px;
-      display: block;
-    }
+        .btn-actualizar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
+        }
 
-    .upload-title {
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: var(--gold-primary);
-      margin-bottom: 6px;
-    }
+        .btn-actualizar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
 
-    .upload-hint {
-      color: var(--text-muted);
-      font-size: 0.85rem;
-    }
+        /* CONTROLES */
+        .controles {
+            background: #111827;
+            border-radius: 12px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            border: 1px solid #1f2937;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
-    #fileInput {
-      display: none;
-    }
+        .controles label {
+            font-size: 14px;
+            color: #9ca3af;
+        }
 
-    /* Barra de Acciones y Control */
-    .action-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      background: var(--card-bg);
-      padding: 12px 20px;
-      border-radius: 8px;
-      border: 1px solid var(--card-border);
-    }
+        .controles select,
+        .controles input {
+            background: #1a2332;
+            border: 1px solid #2a3a4a;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
 
-    .file-info {
-      font-size: 0.9rem;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .controles select:focus,
+        .controles input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
 
-    .status-badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      background: rgba(0, 230, 118, 0.15);
-      color: var(--accent-green);
-      border: 1px solid var(--accent-green);
-    }
+        .controles .btn-pequeno {
+            background: #1a2a3a;
+            border: 1px solid #2a4a5a;
+            color: white;
+            padding: 9px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
 
-    .tab-buttons {
-      display: flex;
-      gap: 8px;
-    }
+        .controles .btn-pequeno:hover {
+            background: #2a3a4a;
+        }
 
-    .btn {
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: 1px solid var(--card-border);
-      background: #1a1d24;
-      color: var(--text-main);
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: all 0.2s ease;
-    }
+        /* ESTADO DE CARGA */
+        .loading {
+            text-align: center;
+            padding: 80px 20px;
+        }
 
-    .btn:hover {
-      background: var(--gold-primary);
-      color: #000;
-    }
+        .spinner {
+            width: 45px;
+            height: 45px;
+            border: 4px solid #1a2a3a;
+            border-top: 4px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
 
-    .btn.active {
-      background: var(--gold-gradient);
-      color: #000;
-      border-color: transparent;
-    }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-    /* Visualizadores */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-      min-height: 550px;
-    }
+        /* GRID DE PARTIDOS */
+        .grid-partidos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 20px;
+        }
 
-    .view-panel {
-      background: var(--card-bg);
-      border-radius: 10px;
-      border: 1px solid var(--card-border);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+        .partido-card {
+            background: linear-gradient(145deg, #141b2b, #0d1220);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #1f2a3a;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.4s ease forwards;
+            opacity: 0;
+        }
 
-    .panel-header {
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.03);
-      border-bottom: 1px solid var(--card-border);
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--gold-primary);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    #codeEditor {
-      width: 100%;
-      height: 500px;
-      background: #0d0e12;
-      color: #d4d4d4;
-      border: none;
-      padding: 16px;
-      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-      font-size: 0.88rem;
-      line-height: 1.5;
-      resize: vertical;
-      outline: none;
-    }
+        .partido-card:hover {
+            transform: translateY(-4px);
+            border-color: #2a4a6a;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        }
 
-    #renderFrame {
-      width: 100%;
-      height: 500px;
-      border: none;
-      background: #ffffff;
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
-    }
+        .partido-card .id-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #1a2a3a;
+            color: #6a8aaa;
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 12px;
+        }
 
-    .hidden {
-      display: none !important;
-    }
-  </style>
+        .fuente-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            border: 1px solid #00d4ff;
+        }
+
+        .equipos {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 15px 0 10px;
+        }
+
+        .equipo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .equipo img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: #0a0e17;
+            padding: 4px;
+            border: 2px solid #1f2a3a;
+        }
+
+        .equipo .nombre {
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            color: #e0e0e0;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .vs {
+            color: #4a6a8a;
+            font-weight: bold;
+            font-size: 13px;
+            padding: 0 8px;
+        }
+
+        .info-partido {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #1a2a3a;
+        }
+
+        .hora {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        .btn-ver {
+            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
+            color: white;
+            padding: 7px 18px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-ver:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-ver.sin-enlace {
+            background: #1a2a3a;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .sin-datos {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6a8aaa;
+        }
+
+        .sin-datos .icono-grande {
+            font-size: 56px;
+            margin-bottom: 15px;
+        }
+
+        /* JSON VISOR */
+        .json-raw {
+            margin-top: 40px;
+            background: #0a0e17;
+            border-radius: 12px;
+            border: 1px solid #1a2a3a;
+            overflow: hidden;
+        }
+
+        .json-raw .toggle {
+            background: #111827;
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .json-raw pre {
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 350px;
+            overflow-y: auto;
+            display: none;
+            background: #06090f;
+            color: #a7f3d0;
+        }
+
+        .json-raw pre.mostrar {
+            display: block;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #3a4a5a;
+            font-size: 13px;
+            padding: 20px;
+            border-top: 1px solid #1a2a3a;
+        }
+
+        .footer a {
+            color: #6a8aaa;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>Gestor & Procesador HTML</h1>
-    <p>Sube, visualiza y edita plantillas o archivos HTML en un solo entorno local</p>
-  </header>
+    <div class="container">
 
-  <div class="container">
-    <!-- Carga de Archivo -->
-    <div class="upload-section" id="dropZone" onclick="document.getElementById('fileInput').click()">
-      <span class="upload-icon">📁</span>
-      <div class="upload-title">Selecciona o arrastra tu archivo .html</div>
-      <div class="upload-hint">Soporta archivos HTML, HTM y plantillas estructuradas UTF-8</div>
-      <input type="file" id="fileInput" accept=".html,.htm,text/html">
-    </div>
+        <!-- HEADER -->
+        <header class="header">
+            <h1>⚽ Cartelera Deportiva</h1>
+            <div class="header-info">
+                <span class="badge">📅 <span id="fechaActual">-</span></span>
+                <span class="badge">🏟️ <span class="numero" id="totalPartidos">0</span> partidos</span>
+                <button class="btn-actualizar" id="btnActualizar" onclick="cargarDatos()">🔄 Actualizar</button>
+            </div>
+        </header>
 
-    <!-- Controles -->
-    <div class="action-bar hidden" id="actionBar">
-      <div class="file-info">
-        <span class="status-badge">CARGADO</span>
-        <strong id="fileName">plantilla.html</strong>
-        <span id="fileSize" style="color: var(--text-muted); font-size: 0.8rem;">(0 KB)</span>
-      </div>
-      <div class="tab-buttons">
-        <button class="btn active" id="btnPreview" onclick="switchView('preview')">Vista Previa (Render)</button>
-        <button class="btn" id="btnCode" onclick="switchView('code')">Código Fuente / Editar</button>
-        <button class="btn" onclick="downloadModified()">Descargar HTML</button>
-      </div>
-    </div>
-
-    <!-- Contenedores principales -->
-    <div class="main-grid hidden" id="mainPanels">
-      <!-- Panel Render -->
-      <div class="view-panel" id="panelPreview">
-        <div class="panel-header">
-          <span>Renderizado en Vivo</span>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Sandbox local</span>
+        <!-- CONTROLES DE CONFIGURACIÓN -->
+        <div class="controles">
+            <label for="dataSource">🌐 Fuente de Datos:</label>
+            <select id="dataSource" onchange="cambiarFuente()">
+                <option value="pelotaalibre">Pelota Libre</option>
+                <option value="thekotb">The KOTB</option>
+                <option value="worker">Cloudflare Worker</option>
+            </select>
+            <input type="url" id="urlWorker" placeholder="https://tu-worker.workers.dev/" value="https://tu-worker.workers.dev/" style="display:none;">
+            <button class="btn-pequeno" onclick="cargarDatos()">📥 Cargar</button>
+            <button class="btn-pequeno" onclick="toggleJSON()">📄 Ver JSON</button>
         </div>
-        <iframe id="renderFrame" sandbox="allow-same-origin allow-scripts"></iframe>
-      </div>
 
-      <!-- Panel Editor -->
-      <div class="view-panel hidden" id="panelCode">
-        <div class="panel-header">
-          <span>Editor de Código Fuente</span>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Edición directa</span>
+        <!-- CONTENEDOR DE PARTIDOS -->
+        <div id="contenedorPartidos">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Cargando cartelera de partidos...</p>
+            </div>
         </div>
-        <textarea id="codeEditor" spellcheck="false" placeholder="El código HTML aparecerá aquí..."></textarea>
-      </div>
+
+        <!-- VISOR JSON -->
+        <div class="json-raw">
+            <div class="toggle" onclick="toggleJSON()">
+                <span>📄 Ver estructura JSON recibida</span>
+                <span id="toggleIcon">▶</span>
+            </div>
+            <pre id="jsonContent"></pre>
+        </div>
+
+        <footer class="footer">
+            Datos consolidados de múltiples fuentes · Auto-actualización activa
+        </footer>
+
     </div>
-  </div>
 
-  <script>
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const actionBar = document.getElementById('actionBar');
-    const mainPanels = document.getElementById('mainPanels');
-    const fileNameDisplay = document.getElementById('fileName');
-    const fileSizeDisplay = document.getElementById('fileSize');
-    const codeEditor = document.getElementById('codeEditor');
-    const renderFrame = document.getElementById('renderFrame');
-    
-    let currentFileName = "documento.html";
+    <script>
+        const SVG_FALLBACK = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%231a2a3a" width="100" height="100"/%3E%3Ctext x="50" y="55" text-anchor="middle" font-size="40" fill="%236a8aaa"%3E⚽%3C/text%3E%3C/svg%3E';
 
-    // Eventos Drag & Drop
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-      }, false);
-    });
+        // ========================================
+        // CARGA Y PROCESAMIENTO AUTOMÁTICO
+        // ========================================
+        async function cargarDatos() {
+            const btn = document.getElementById('btnActualizar');
+            const contenedor = document.getElementById('contenedorPartidos');
+            const dataSource = document.getElementById('dataSource').value;
 
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-      }, false);
-    });
+            btn.disabled = true;
+            btn.textContent = '⏳ Cargando...';
+            contenedor.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Obteniendo todos los partidos de la cartelera...</p>
+                </div>
+            `;
 
-    dropZone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      if (files.length) handleFile(files[0]);
-    });
+            try {
+                let data = null;
 
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length) handleFile(e.target.files[0]);
-    });
+                // Seleccionar fuente de datos
+                if (dataSource === 'pelotaalibre') {
+                    data = await obtenerDatosPelotaLibre();
+                } else if (dataSource === 'thekotb') {
+                    data = await obtenerDatosDirectosScraped();
+                } else if (dataSource === 'worker') {
+                    const urlWorker = document.getElementById('urlWorker').value.trim();
+                    if (urlWorker && !urlWorker.includes('tu-worker.workers.dev')) {
+                        const response = await fetch(urlWorker, { 
+                            method: 'GET', 
+                            headers: { 'Accept': 'application/json' } 
+                        });
+                        if (response.ok) {
+                            data = await response.json();
+                        }
+                    }
+                }
 
-    // Leer y cargar el archivo
-    function handleFile(file) {
-      if (!file.name.match(/\.(html|htm)$/i) && file.type !== 'text/html') {
-        alert('Por favor selecciona un archivo HTML válido (.html o .htm)');
-        return;
-      }
+                // Fallback: Si no hay datos, intentar scraper directo
+                if (!data || !data.cartelera || data.cartelera.length === 0) {
+                    data = await obtenerDatosDirectosScraped();
+                }
 
-      currentFileName = file.name;
-      fileNameDisplay.textContent = file.name;
-      fileSizeDisplay.textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+                renderizarPartidos(data);
+                actualizarStats(data);
+                mostrarJSON(data);
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const content = e.target.result;
-        codeEditor.value = content;
-        updateRender(content);
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                contenedor.innerHTML = `
+                    <div class="sin-datos">
+                        <div class="icono-grande">❌</div>
+                        <h2>Error al procesar la cartelera</h2>
+                        <p style="margin-top:8px;">${error.message}</p>
+                        <button class="btn-actualizar" style="margin-top:20px;" onclick="cargarDatos()">🔄 Reintentar</button>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 Actualizar';
+            }
+        }
 
-        actionBar.classList.remove('hidden');
-        mainPanels.classList.remove('hidden');
-      };
-      reader.readAsText(file);
-    }
+        // ========================================
+        // SCRAPER DE PELOTA LIBRE
+        // ========================================
+        async function obtenerDatosPelotaLibre() {
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://pelotaalibre.la/inicio.php');
+            const res = await fetch(proxyUrl);
+            const htmlText = await res.text();
 
-    // Renderizar en iframe
-    function updateRender(htmlContent) {
-      const doc = renderFrame.contentDocument || renderFrame.contentWindow.document;
-      doc.open();
-      doc.write(htmlContent);
-      doc.close();
-    }
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            const partidos = [];
 
-    // Actualización instantánea si editas el código
-    codeEditor.addEventListener('input', () => {
-      updateRender(codeEditor.value);
-    });
+            // Buscar elementos que contengan información de partidos
+            const elementos = doc.querySelectorAll(
+                '[class*="partido"], [class*="match"], [class*="game"], [class*="event"], ' +
+                '[class*="card"], tr, .item, [data-match], [data-game]'
+            );
 
-    // Cambio entre Render y Código
-    function switchView(view) {
-      const panelPreview = document.getElementById('panelPreview');
-      const panelCode = document.getElementById('panelCode');
-      const btnPreview = document.getElementById('btnPreview');
-      const btnCode = document.getElementById('btnCode');
+            elementos.forEach((el, idx) => {
+                const texto = el.textContent || '';
+                // Buscar patrones de VS o equipos
+                if (texto.match(/\b[a-záéíóúñ\s]+\s+(?:vs?|vs\.|\svs\s|contra)\s+[a-záéíóúñ\s]+/i)) {
+                    const imgs = el.querySelectorAll('img');
+                    const link = el.querySelector('a[href]');
 
-      if (view === 'preview') {
-        panelPreview.classList.remove('hidden');
-        panelCode.classList.add('hidden');
-        btnPreview.classList.add('active');
-        btnCode.classList.remove('active');
-      } else {
-        panelCode.classList.remove('hidden');
-        panelPreview.classList.add('hidden');
-        btnCode.classList.add('active');
-        btnPreview.classList.remove('active');
-      }
-    }
+                    // Intentar extraer nombres de equipos
+                    const partes = texto.split(/\s+(?:vs?|vs\.|\svs\s|contra)\s+/i);
+                    let local = partes[0]?.trim().substring(0, 30) || 'Equipo Local';
+                    let visita = partes[1]?.trim().substring(0, 30) || 'Equipo Visita';
 
-    // Descargar copia del HTML modificado
-    function downloadModified() {
-      const blob = new Blob([codeEditor.value], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'modificado_' + currentFileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  </script>
+                    if (local && visita) {
+                        partidos.push({
+                            id: idx + 1,
+                            equipoLocal: local,
+                            equipoVisita: visita,
+                            logoLocal: imgs[0]?.src || SVG_FALLBACK,
+                            logoVisita: imgs[1]?.src || SVG_FALLBACK,
+                            hora: 'En vivo / Hoy',
+                            urlServidor: link?.href || null,
+                            fuente: 'Pelota Libre'
+                        });
+                    }
+                }
+            });
+
+            return {
+                metadata: { 
+                    fechaExtraccion: new Date().toISOString(),
+                    fuente: 'pelotaalibre.la'
+                },
+                cartelera: partidos.slice(0, 50)
+            };
+        }
+
+        // ========================================
+        // SCRAPER DE THEKOTB (Respaldo)
+        // ========================================
+        async function obtenerDatosDirectosScraped() {
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.thekotb.com/');
+            const res = await fetch(proxyUrl);
+            const htmlText = await res.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            const partidos = [];
+
+            const filas = doc.querySelectorAll('tr, .match-item, .event, .card, a[href*="server"]');
+
+            filas.forEach((el, idx) => {
+                const texto = el.textContent || '';
+                if (texto.includes('VS') || texto.includes('vs') || texto.includes('-')) {
+                    const imgs = el.querySelectorAll('img');
+                    const link = el.querySelector('a') || (el.tagName === 'A' ? el : null);
+
+                    let local = 'Equipo Local';
+                    let visita = 'Equipo Visita';
+
+                    const partes = texto.split(/VS|vs|-/);
+                    if (partes.length >= 2) {
+                        local = partes[0].trim().replace(/\s+/g, ' ').slice(-20) || local;
+                        visita = partes[1].trim().replace(/\s+/g, ' ').slice(0, 20) || visita;
+                    }
+
+                    partidos.push({
+                        id: idx + 1,
+                        equipoLocal: local,
+                        equipoVisita: visita,
+                        logoLocal: imgs[0]?.src || SVG_FALLBACK,
+                        logoVisita: imgs[1]?.src || SVG_FALLBACK,
+                        hora: 'En vivo / Hoy',
+                        urlServidor: link?.href || null,
+                        fuente: 'The KOTB'
+                    });
+                }
+            });
+
+            return {
+                metadata: { 
+                    fechaExtraccion: new Date().toISOString(),
+                    fuente: 'thekotb.com'
+                },
+                cartelera: partidos
+            };
+        }
+
+        // ========================================
+        // RENDERIZADO COMPLETO
+        // ========================================
+        function renderizarPartidos(data) {
+            const contenedor = document.getElementById('contenedorPartidos');
+            const partidos = data.cartelera || [];
+
+            if (partidos.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="sin-datos">
+                        <div class="icono-grande">🏟️</div>
+                        <h2>No se encontraron partidos</h2>
+                        <p>No hay eventos disponibles en este momento.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="grid-partidos">';
+
+            partidos.forEach((partido, index) => {
+                const tieneEnlace = partido.urlServidor && partido.urlServidor !== 'null';
+                const logoLocal = partido.logoLocal || SVG_FALLBACK;
+                const logoVisita = partido.logoVisita || SVG_FALLBACK;
+                const delay = Math.min(index * 0.02, 0.8);
+
+                html += `
+                    <div class="partido-card" style="animation-delay: ${delay}s">
+                        <span class="id-badge">#${partido.id || index + 1}</span>
+                        <span class="fuente-badge">${partido.fuente || 'No especificada'}</span>
+                        
+                        <div class="equipos">
+                            <div class="equipo">
+                                <img src="${logoLocal}" alt="${partido.equipoLocal}" onerror="this.src='${SVG_FALLBACK}'">
+                                <span class="nombre" title="${partido.equipoLocal}">${partido.equipoLocal}</span>
+                            </div>
+                            
+                            <div class="vs">VS</div>
+                            
+                            <div class="equipo">
+                                <img src="${logoVisita}" alt="${partido.equipoVisita}" onerror="this.src='${SVG_FALLBACK}'">
+                                <span class="nombre" title="${partido.equipoVisita}">${partido.equipoVisita}</span>
+                            </div>
+                        </div>
+
+                        <div class="info-partido">
+                            <div class="hora">
+                                <span>🕐</span>
+                                <span>${partido.hora || 'Por confirmar'}</span>
+                            </div>
+                            ${tieneEnlace 
+                                ? `<a href="${partido.urlServidor}" target="_blank" class="btn-ver">▶ Ver partido</a>`
+                                : `<span class="btn-ver sin-enlace">🔒 Sin enlace</span>`
+                            }
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            contenedor.innerHTML = html;
+        }
+
+        // ========================================
+        // ESTADÍSTICAS Y MANTENIMIENTO
+        // ========================================
+        function actualizarStats(data) {
+            const total = data.cartelera?.length || 0;
+            document.getElementById('totalPartidos').textContent = total;
+
+            const fecha = new Date(data.metadata?.fechaExtraccion || Date.now());
+            document.getElementById('fechaActual').textContent = fecha.toLocaleString('es-ES', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function mostrarJSON(data) {
+            document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
+        }
+
+        function toggleJSON() {
+            const pre = document.getElementById('jsonContent');
+            const icon = document.getElementById('toggleIcon');
+            if (pre.classList.contains('mostrar')) {
+                pre.classList.remove('mostrar');
+                icon.textContent = '▶';
+            } else {
+                pre.classList.add('mostrar');
+                icon.textContent = '▼';
+            }
+        }
+
+        function cambiarFuente() {
+            const fuente = document.getElementById('dataSource').value;
+            localStorage.setItem('dataSource', fuente);
+            cargarDatos();
+        }
+
+        // Al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            const dataSourceGuardada = localStorage.getItem('dataSource') || 'pelotaalibre';
+            document.getElementById('dataSource').value = dataSourceGuardada;
+
+            // Carga automática inicial
+            cargarDatos();
+
+            // Refresco automático cada 60 segundos
+            setInterval(() => {
+                cargarDatos();
+            }, 60000);
+        });
+    </script>
 </body>
 </html>
