@@ -1,651 +1,121 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pelota Libre & Buscador de Fuentes M3U</title>
-
-  <!-- CSS Dependencies -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter/400.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter/600.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk/700.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    :root {
-      --bg-dark: #070d1a;
-      --card-bg: #0d1626;
-      --card-bg-2: #111c31;
-      --card-border: #1e2c45;
-      --gold-primary: #e0aa3e;
-      --gold-gradient: linear-gradient(135deg, #f7d070 0%, #e0aa3e 50%, #b8860b 100%);
-      --text-main: #e6edf7;
-      --text-muted: #8ea0bd;
-      --accent-red: #ef4444;
-      --accent-green: #22c55e;
-      --accent-blue: #2563eb;
-      --cyan: #38bdf8;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; }
-
-    header {
-      background: rgba(13, 22, 38, .85);
-      backdrop-filter: blur(10px);
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--card-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .brand { display: flex; align-items: center; gap: .8rem; }
-    .brand-icon {
-      width: 42px; height: 42px; border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent-blue), var(--cyan));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; color: #fff;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      width: 100%;
-      padding: 1.5rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    /* Modulos */
-    .panel {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 1.25rem;
-    }
-
-    .section-title {
-      font-size: 1.2rem;
-      color: var(--gold-primary);
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* Tabla de Partidos */
-    .table-container {
-      background: var(--card-bg-2);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.88rem;
-    }
-
-    th {
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--gold-primary);
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--card-border);
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.5px;
-    }
-
-    td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--card-border);
-      color: var(--text-main);
-    }
-
-    tr:hover { background: rgba(255, 255, 255, 0.02); }
-
-    .tag-channel {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: rgba(37, 99, 235, 0.15);
-      color: var(--cyan);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin: 2px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .tag-channel:hover {
-      background: rgba(37, 99, 235, 0.35);
-      border-color: var(--cyan);
-    }
-
-    .m3u-link {
-      color: var(--accent-green);
-      font-family: monospace;
-      font-size: 0.78rem;
-      word-break: break-all;
-    }
-
-    /* Reproductor */
-    .player-container {
-      background: var(--card-bg);
-      border-radius: 14px;
-      border: 1px solid var(--card-border);
-      overflow: hidden;
-    }
-
-    .player-header {
-      padding: 12px 20px;
-      background: var(--card-bg-2);
-      border-bottom: 1px solid var(--card-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    iframe { width: 100%; height: 500px; border: none; background: #000; }
-
-    /* Formulario de búsqueda */
-    .api-form {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      align-items: end;
-      margin-top: 1rem;
-    }
-
-    .form-group { display: flex; flex-direction: column; gap: .4rem; }
-    .form-group label { font-size: .8rem; color: var(--text-muted); font-weight: 600; }
-
-    .form-control {
-      padding: .6rem .8rem;
-      border-radius: 8px;
-      border: 1px solid var(--card-border);
-      background: var(--bg-dark);
-      color: var(--text-main);
-      font-size: .85rem;
-      outline: none;
-    }
-
-    .form-control:focus { border-color: var(--accent-blue); }
-
-    .btn {
-      padding: .6rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: .5rem;
-      border: none;
-      font-size: .85rem;
-      transition: all .2s;
-    }
-
-    .btn-gold { background: var(--gold-gradient); color: #000; }
-    .btn-gold:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-primary { background: var(--accent-blue); color: #fff; }
-    .btn-primary:hover { background-color: #1d4ed8; }
-    .btn-success { background: var(--accent-green); color: #fff; }
-    .btn-success:hover { filter: brightness(1.1); }
-
-    /* Resultados Búsqueda */
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .channel-card {
-      background: var(--card-bg-2);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: .75rem;
-    }
-
-    .channel-header { display: flex; align-items: center; gap: .8rem; }
-    .channel-logo { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; background: rgba(0,0,0,.3); padding: 2px; border: 1px solid var(--card-border); }
-    .channel-title { font-weight: 600; font-size: .9rem; color: var(--text-main); }
-    .channel-group { font-size: .75rem; color: var(--text-muted); }
-
-    .url-box {
-      background: var(--bg-dark);
-      border: 1px solid var(--card-border);
-      padding: .5rem .75rem;
-      border-radius: 6px;
-      font-family: monospace;
-      font-size: .75rem;
-      color: var(--cyan);
-      word-break: break-all;
-    }
-
-    .copy-toast {
-      position: fixed; bottom: 20px; right: 20px;
-      background: var(--accent-green); color: #fff;
-      padding: .6rem 1.2rem; border-radius: 8px;
-      font-weight: 600; font-size: .85rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,.3);
-      display: none; opacity: 0; transition: opacity .2s ease;
-      z-index: 1000;
-    }
-
-    pre {
-      background: #04070e;
-      color: var(--accent-green);
-      padding: 1rem;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 0.8rem;
-      max-height: 250px;
-      overflow-y: auto;
-      border: 1px solid var(--card-border);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>HLS Live Minimalist</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css" />
+    <style>
+        :root { --plyr-color-main: #fff; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 800px; padding: 10px; }
+        
+        .controls-top { display: flex; gap: 5px; margin-bottom: 10px; }
+        input { flex: 1; background: #111; border: 1px solid #222; color: #fff; padding: 8px; border-radius: 4px; }
+        
+        .btn-group { display: flex; gap: 5px; margin-top: 10px; }
+        .mini-btn { background: #111; border: 1px solid #333; color: #888; padding: 5px 12px; font-size: 11px; text-transform: uppercase; cursor: pointer; border-radius: 3px; transition: 0.2s; }
+        .mini-btn:hover { background: #222; color: #fff; }
+        
+        .plyr { --plyr-range-track-height: 1px; --plyr-video-control-background: transparent; }
+        .player-wrapper { border: 1px solid #111; }
+    </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">
-      <div class="brand-icon"><i class="fa-solid fa-futbol"></i></div>
-      <div>
-        <h1 class="text-xl font-bold text-white">Pelota Libre - Extractor & Buscador M3U</h1>
-        <p class="text-xs text-slate-400">Captura partidos de la agenda y vincúlalos con fuentes M3U/M3U8 de canales en vivo[cite: 1]</p>
-      </div>
-    </div>
-  </header>
-
-  <div class="container">
-
-    <!-- 1. AGENDA DE PARTIDOS CON BÚSQUEDA DE FUENTES AUTOMÁTICA -->
-    <div class="panel">
-      <h2 class="section-title"><i class="fa-solid fa-calendar-days"></i> ⚽ Agenda de Partidos y Fuentes Asignadas</h2>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Día / Hora</th>
-              <th>Evento / Partido</th>
-              <th>Canales que lo emiten</th>
-              <th>Fuente M3U Directa del Canal</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="eventsTableBody">
-            <!-- Renderizado dinámico -->
-          </tbody>
-        </table>
-      </div>
+<div class="container">
+    <div class="controls-top">
+        <input type="text" id="sourceUrl" value="https://7nyaler.streamhostingcdn.top/stream/18/index.m3u8">
+        <button class="mini-btn" id="loadStream">Cargar</button>
     </div>
 
-    <!-- REPRODUCTOR PRINCIPAL -->
-    <div class="player-container">
-      <div class="player-header">
-        <div class="flex items-center gap-2">
-          <span style="width:10px; height:10px; background:var(--accent-red); border-radius:50%; display:inline-block; box-shadow:0 0 8px var(--accent-red)"></span>
-          <span id="playerTitle" class="font-bold text-amber-400">Seleccione un evento o canal</span>
-        </div>
-        <span id="playerUrl" class="text-xs text-slate-400">https://pelotaalibre.la/inicio.php</span>
-      </div>
-      <iframe id="mainPlayer" src="https://pelotaalibre.la/inicio.php" allowfullscreen allow="encrypted-media"></iframe>
+    <div class="player-wrapper">
+        <video id="player" playsinline></video>
     </div>
 
-    <!-- 2. BUSCADOR DE CANALES Y FUENTES M3U -->
-    <div class="panel">
-      <h2 class="section-title"><i class="fa-solid fa-tv"></i> 🔍 Buscador Global de Fuentes M3U por Nombre de Canal</h2>
-      
-      <div class="api-form">
-        <div class="form-group">
-          <label for="search_input">Buscar por Nombre de Canal[cite: 1]</label>
-          <input type="text" id="search_input" class="form-control" placeholder="Ej: ESPN, TNT Sports, 1+1, 2M..." oninput="filtrarCanales()">
-        </div>
-
-        <div class="form-group">
-          <label for="group_filter">Categoría / Grupo</label>
-          <select id="group_filter" class="form-control" onchange="filtrarCanales()">
-            <option value="all">Todas las categorías</option>
-          </select>
-        </div>
-
-        <button type="button" class="btn btn-success" onclick="exportarM3U()">
-          <i class="fa-solid fa-file-arrow-down"></i> Exportar Lista M3U
-        </button>
-      </div>
-
-      <div class="flex justify-between items-center my-4">
-        <span id="counter" class="text-xs font-semibold text-slate-400">Cargando base de datos...</span>
-      </div>
-
-      <div id="results_container" class="results-grid">
-        <!-- Renderizado dinámico de tarjetas -->
-      </div>
+    <div class="btn-group">
+        <button class="mini-btn" id="btnBackward">Anterior -15s</button>
+        <button class="mini-btn" id="btnLive">Ir al Vivo</button>
     </div>
+</div>
 
-    <!-- SCRUBBING JSON OUTPUT -->
-    <div class="panel">
-      <div class="flex justify-between items-center mb-3">
-        <h2 class="section-title" style="margin-bottom:0;"><i class="fa-solid fa-code"></i> Scrubbing Output JSON</h2>
-        <button class="btn btn-gold text-xs" onclick="exportJSON()"><i class="fa-solid fa-download"></i> Descargar JSON</button>
-      </div>
-      <pre id="jsonOutput"></pre>
-    </div>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+<script>
+    const inputFuente = document.getElementById('sourceUrl');
+    const video = document.getElementById('player');
+    const player = new Plyr(video, { controls: ['play', 'progress', 'mute', 'volume', 'fullscreen'] });
+    
+    let fuente = "";
+    let hls;
 
-  </div>
+    function initPlayer() {
+        fuente = inputFuente.value.trim();
 
-  <div id="toast" class="copy-toast"><i class="fa-solid fa-check"></i> Enlace copiado al portapapeles</div>
+        if (hls) hls.destroy();
 
-  <script>
-    // 1. Datos de Agenda (Script Pelota Libre)
-    const scrapedEventsData = {
-      timestamp: new Date().toISOString(),
-      section: "Ver Pelota Libre Para Todos en Vivo",
-      sourceUrl: "https://pelotaalibre.la/inicio.php",
-      events: [
-        {
-          id: 1,
-          time: "Hoy 18:00 HS",
-          match: "Boca Juniors vs. River Plate",
-          channels: ["TNT Sports", "ESPN Premium"],
-          eventLink: "https://pelotaalibre.la/canal.php?stream=espnpremium",
-          iframeEmbed: "https://embed.pelotaalibre.la/player.php?id=espnpremium"
-        },
-        {
-          id: 2,
-          time: "Hoy 20:30 HS",
-          match: "Racing Club vs. Independiente",
-          channels: ["TNT Sports"],
-          eventLink: "https://pelotaalibre.la/canal.php?stream=tntsports",
-          iframeEmbed: "https://embed.pelotaalibre.la/player.php?id=tntsports"
-        },
-        {
-          id: 3,
-          time: "Hoy 21:00 HS",
-          match: "Real Madrid vs. Barcelona",
-          channels: ["DSPORTS", "ESPN 1"],
-          eventLink: "https://pelotaalibre.la/canal.php?stream=dsports",
-          iframeEmbed: "https://embed.pelotaalibre.la/player.php?id=dsports"
-        },
-        {
-          id: 4,
-          time: "Mañana 16:00 HS",
-          match: "Liverpool vs. Manchester City",
-          channels: ["ESPN 1", "1+1 International"],
-          eventLink: "https://pelotaalibre.la/canal.php?stream=espn1",
-          iframeEmbed: "https://embed.pelotaalibre.la/player.php?id=espn1"
-        },
-        {
-          id: 5,
-          time: "Mañana 19:00 HS",
-          match: "Atlético Nacional vs. Millonarios",
-          channels: ["2M Monde"],
-          eventLink: "https://pelotaalibre.la/canal.php?stream=winsports",
-          iframeEmbed: "https://embed.pelotaalibre.la/player.php?id=winsports"
+        // Parámetro ajustado para tu Cloudflare Worker (?iiii=)
+        const targetUrl = "https://falling-dew-80ec.xear-div.workers.dev/?iiii=" + encodeURIComponent(fuente);
+        
+        hls = new Hls({
+            // Ajustes para evitar cortes y congelamientos entre segmentos
+            lowLatencyMode: false,          // Desactiva latencia extrema para dar margen al buffer
+            liveSyncDurationCount: 3,       // Mantiene un colchón de 3 segmentos cargados
+            liveMaxLatencyDurationCount: 10, 
+            maxBufferLength: 30,            // Buffer de seguridad de 30 segundos
+            enableWorker: true,             // Procesa segmentos en un hilo separado
+            manifestLoadingTimeOut: 10000,
+            manifestLoadingMaxRetry: 4
+        });
+
+        hls.loadSource(targetUrl);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(() => {});
+        });
+
+        // Recuperación automática si la transmisión se frena
+        hls.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+                switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        hls.startLoad();
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        hls.recoverMediaError();
+                        break;
+                    default:
+                        initPlayer();
+                        break;
+                }
+            }
+        });
+    }
+
+    document.getElementById('loadStream').onclick = initPlayer;
+
+    document.getElementById('btnLive').onclick = () => {
+        const inputActual = inputFuente.value.trim();
+
+        if (inputActual !== fuente) {
+            initPlayer();
+            return;
         }
-      ]
+
+        if (hls) {
+            hls.startLoad();
+            if (video.seekable.length) {
+                video.currentTime = video.seekable.end(0);
+            }
+        } else {
+            initPlayer();
+        }
     };
 
-    // 2. Base de Datos Extendida de Canales M3U
-    const baseDeDatosCanales = [
-      {
-        "channel_name": "TNT Sports",
-        "group": "Sports",
-        "m3u8_link": "https://cdn.streamserver.net/hls/tntsports/index.m3u8?token=live_4d5e6f",
-        "logo": "https://via.placeholder.com/40?text=TNT"
-      },
-      {
-        "channel_name": "ESPN Premium",
-        "group": "Sports",
-        "m3u8_link": "https://cdn.streamserver.net/hls/espnpremium/index.m3u8?token=live_1a2b3c",
-        "logo": "https://via.placeholder.com/40?text=ESPN"
-      },
-      {
-        "channel_name": "DSPORTS",
-        "group": "Sports",
-        "m3u8_link": "https://cdn.streamserver.net/hls/dsports/index.m3u8?token=live_7g8h9i",
-        "logo": "https://via.placeholder.com/40?text=DS"
-      },
-      {
-        "channel_name": "00s Replay",
-        "group": "Movies",
-        "m3u8_link": "https://jmp2.uk/plu-62ba60f059624e000781c436.m3u8",
-        "logo": "https://images.pluto.tv/channels/62ba60f059624e000781c436/colorLogoPNG.png"
-      },
-      {
-        "channel_name": "1+1 International",
-        "group": "General",
-        "m3u8_link": "http://158.101.222.193:88/georgia_play.php?id=1plus1international",
-        "logo": "https://i.imgur.com/LOY0rtp.png"
-      },
-      {
-        "channel_name": "1+1 International HD (720p)",
-        "group": "General",
-        "m3u8_link": "https://dash2.antik.sk/live/test_one_plus_one_int_tizen/playlist.m3u8",
-        "logo": "https://i.imgur.com/LOY0rtp.png"
-      },
-      {
-        "channel_name": "1+1 Marafon (1080p)",
-        "group": "General",
-        "m3u8_link": "https://dash2.antik.sk/live/1plus1_marathon/playlist.m3u8",
-        "logo": "https://i.imgur.com/smQKa2G.png"
-      },
-      {
-        "channel_name": "2M Monde (360p)",
-        "group": "General",
-        "m3u8_link": "https://cdn-globecast.akamaized.net/live/eds/2m_monde/hls_video_ts_tuhawxpiemz257adfc/2m_monde.m3u8",
-        "logo": "https://i.imgur.com/MvpntzA.png"
-      },
-      {
-        "channel_name": "3CatInfo (1080p)",
-        "group": "News;Public",
-        "m3u8_link": "https://directes-tv-int.3catdirectes.cat/live-origin/canal324-hls/master.m3u8",
-        "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/3CatInfo_logo.svg/960px-3CatInfo_logo.svg.png"
-      }
-    ];
+    document.getElementById('btnBackward').onclick = () => video.currentTime -= 15;
 
-    let canalesActuales = [...baseDeDatosCanales];
-
-    // Buscar M3U correspondiente según el nombre de un canal[cite: 1]
-    function obtenerM3uPorCanal(nombreCanal) {
-      const limpio = nombreCanal.toLowerCase().trim();
-      const hallado = baseDeDatosCanales.find(c => c.channel_name.toLowerCase().includes(limpio));
-      return hallado ? hallado.m3u8_link : "No encontrada en DB";
-    }
-
-    // Renderizar Tabla de Eventos e Integrar Búsqueda por Nombre[cite: 1]
-    function renderEventsTable() {
-      const tbody = document.getElementById('eventsTableBody');
-      tbody.innerHTML = '';
-
-      scrapedEventsData.events.forEach(ev => {
-        const tr = document.createElement('tr');
-        
-        // Mapear cada canal emisor con su fuente m3u
-        let fuentesHtml = [];
-        let tagsHtml = ev.channels.map(ch => {
-          const m3uUrl = obtenerM3uPorCanal(ch);
-          if (m3uUrl !== "No encontrada en DB") {
-            fuentesHtml.push(`<div><strong>${ch}:</strong> <span class="m3u-link">${m3uUrl}</span></div>`);
-          } else {
-            fuentesHtml.push(`<div><strong>${ch}:</strong> <span style="color:var(--text-muted)">Sin señal M3U</span></div>`);
-          }
-          return `<span class="tag-channel" onclick="buscarTexto('${ch}')"><i class="fa-solid fa-search"></i> ${ch}</span>`;
-        }).join('');
-
-        tr.innerHTML = `
-          <td><strong>${ev.time}</strong></td>
-          <td style="font-weight:600; color:var(--gold-primary);">${ev.match}</td>
-          <td>${tagsHtml}</td>
-          <td>${fuentesHtml.join('')}</td>
-          <td>
-            <button class="btn btn-gold text-xs" onclick="loadStream('${ev.match}', '${ev.eventLink}')">
-              <i class="fa-solid fa-play"></i> Reproducir
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Cargar iframe
-    function loadStream(match, url) {
-      document.getElementById('mainPlayer').src = url;
-      document.getElementById('playerTitle').textContent = match;
-      document.getElementById('playerUrl').textContent = url;
-    }
-
-    // Inicializar Select de Categorías
-    function inicializarGrupos() {
-      const select = document.getElementById('group_filter');
-      const grupos = new Set();
-      baseDeDatosCanales.forEach(c => {
-        if (c.group) c.group.split(';').forEach(g => grupos.add(g.trim()));
-      });
-
-      grupos.forEach(grupo => {
-        const option = document.createElement('option');
-        option.value = grupo;
-        option.textContent = grupo;
-        select.appendChild(option);
-      });
-    }
-
-    // Filtrar canales por input de usuario[cite: 1]
-    function filtrarCanales() {
-      const texto = document.getElementById('search_input').value.toLowerCase().trim();
-      const grupoSeleccionado = document.getElementById('group_filter').value;
-
-      canalesActuales = baseDeDatosCanales.filter(canal => {
-        const coincideNombre = canal.channel_name.toLowerCase().includes(texto);
-        const coincideGrupo = grupoSeleccionado === 'all' || (canal.group && canal.group.includes(grupoSeleccionado));
-        return coincideNombre && coincideGrupo;
-      });
-
-      renderizarLista();
-    }
-
-    // Renderizar resultados en Grid
-    function renderizarLista() {
-      const container = document.getElementById('results_container');
-      const counter = document.getElementById('counter');
-
-      counter.textContent = `Mostrando ${canalesActuales.length} de ${baseDeDatosCanales.length} canales disponibles`;
-      container.innerHTML = '';
-
-      if (canalesActuales.length === 0) {
-        container.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-muted);">
-            <i class="fa-solid fa-ban" style="font-size: 2rem; margin-bottom: .5rem;"></i>
-            <p>No se hallaron fuentes M3U para esta búsqueda.</p>
-          </div>
-        `;
-        return;
-      }
-
-      canalesActuales.forEach(canal => {
-        const card = document.createElement('div');
-        card.className = 'channel-card';
-        card.innerHTML = `
-          <div class="channel-header">
-            <img src="${canal.logo}" class="channel-logo" alt="logo" onerror="this.src='https://via.placeholder.com/40?text=TV'">
-            <div>
-              <div class="channel-title">${canal.channel_name}</div>
-              <div class="channel-group"><i class="fa-solid fa-layer-group"></i> ${canal.group || 'General'}</div>
-            </div>
-          </div>
-          <div class="url-box">${canal.m3u8_link}</div>
-          <div style="display:flex; gap:.5rem;">
-            <button class="btn btn-primary" style="flex:1;" onclick="copiarUrl('${canal.m3u8_link}')">
-              <i class="fa-regular fa-copy"></i> Copiar URL
-            </button>
-            <a href="${canal.m3u8_link}" target="_blank" class="btn" style="background:var(--bg-dark); border:1px solid var(--card-border); color:var(--text-main);">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </a>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function copiarUrl(url) {
-      navigator.clipboard.writeText(url).then(() => {
-        const toast = document.getElementById('toast');
-        toast.style.display = 'block';
-        setTimeout(() => toast.style.opacity = '1', 10);
-        setTimeout(() => {
-          toast.style.opacity = '0';
-          setTimeout(() => toast.style.display = 'none', 200);
-        }, 2000);
-      });
-    }
-
-    function buscarTexto(txt) {
-      document.getElementById('search_input').value = txt;
-      filtrarCanales();
-    }
-
-    function exportarM3U() {
-      if (canalesActuales.length === 0) return;
-      let contenidoM3U = "#EXTM3U\n";
-      canalesActuales.forEach(c => {
-        contenidoM3U += `#EXTINF:-1 tvg-logo="${c.logo}" group-title="${c.group}",${c.channel_name}\n${c.m3u8_link}\n`;
-      });
-
-      const blob = new Blob([contenidoM3U], { type: 'audio/x-mpegurl' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'canales_filtrados.m3u';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function renderJSON() {
-      document.getElementById('jsonOutput').textContent = JSON.stringify(scrapedEventsData, null, 2);
-    }
-
-    function exportJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scrapedEventsData, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "pelota_libre_agenda.json");
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    // Eventos Iniciales
-    document.addEventListener('DOMContentLoaded', () => {
-      renderEventsTable();
-      inicializarGrupos();
-      renderizarLista();
-      renderJSON();
-    });
-  </script>
+    // Carga inicial
+    initPlayer();
+</script>
 </body>
 </html>
