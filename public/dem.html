@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>HLS Live Minimalist</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css" />
+    <style>
+        :root { --plyr-color-main: #fff; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 800px; padding: 10px; }
+        
+        .controls-top { display: flex; gap: 5px; margin-bottom: 10px; }
+        input { flex: 1; background: #111; border: 1px solid #222; color: #fff; padding: 8px; border-radius: 4px; }
+        
+        .btn-group { display: flex; gap: 5px; margin-top: 10px; }
+        .mini-btn { background: #111; border: 1px solid #333; color: #888; padding: 5px 12px; font-size: 11px; text-transform: uppercase; cursor: pointer; border-radius: 3px; transition: 0.2s; }
+        .mini-btn:hover { background: #222; color: #fff; }
+        
+        .plyr { --plyr-range-track-height: 1px; --plyr-video-control-background: transparent; }
+        .player-wrapper { border: 1px solid #111; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="controls-top">
+        <input type="text" id="sourceUrl" value="https://7nyaler.streamhostingcdn.top/stream/18/index.m3u8">
+        <button class="mini-btn" id="loadStream">Cargar</button>
+    </div>
+
+    <div class="player-wrapper">
+        <video id="player" playsinline></video>
+    </div>
+
+    <div class="btn-group">
+        <button class="mini-btn" id="btnBackward">Anterior -15s</button>
+        <button class="mini-btn" id="btnLive">Ir al Vivo</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+<script>
+    const inputFuente = document.getElementById('sourceUrl');
+    const video = document.getElementById('player');
+    const player = new Plyr(video, { controls: ['play', 'progress', 'mute', 'volume', 'fullscreen'] });
+    
+    let fuente = "";
+    let hls;
+
+    function initPlayer() {
+        fuente = inputFuente.value.trim();
+
+        if (hls) hls.destroy();
+
+        // Parámetro ajustado para tu Cloudflare Worker (?iiii=)
+        const targetUrl = "https://falling-dew-80ec.xear-div.workers.dev/?iiii=" + encodeURIComponent(fuente);
+        
+        hls = new Hls({
+            // Ajustes para evitar cortes y congelamientos entre segmentos
+            lowLatencyMode: false,          // Desactiva latencia extrema para dar margen al buffer
+            liveSyncDurationCount: 3,       // Mantiene un colchón de 3 segmentos cargados
+            liveMaxLatencyDurationCount: 10, 
+            maxBufferLength: 30,            // Buffer de seguridad de 30 segundos
+            enableWorker: true,             // Procesa segmentos en un hilo separado
+            manifestLoadingTimeOut: 10000,
+            manifestLoadingMaxRetry: 4
+        });
+
+        hls.loadSource(targetUrl);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(() => {});
+        });
+
+        // Recuperación automática si la transmisión se frena
+        hls.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+                switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        hls.startLoad();
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        hls.recoverMediaError();
+                        break;
+                    default:
+                        initPlayer();
+                        break;
+                }
+            }
+        });
+    }
+
+    document.getElementById('loadStream').onclick = initPlayer;
+
+    document.getElementById('btnLive').onclick = () => {
+        const inputActual = inputFuente.value.trim();
+
+        if (inputActual !== fuente) {
+            initPlayer();
+            return;
+        }
+
+        if (hls) {
+            hls.startLoad();
+            if (video.seekable.length) {
+                video.currentTime = video.seekable.end(0);
+            }
+        } else {
+            initPlayer();
+        }
+    };
+
+    document.getElementById('btnBackward').onclick = () => video.currentTime -= 15;
+
+    // Carga inicial
+    initPlayer();
+</script>
+</body>
+</html>
